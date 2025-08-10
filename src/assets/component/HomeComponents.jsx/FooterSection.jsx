@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import SubscribeNow from './SubscribeNow';
-import cargorealmlogo from '../../images/cargorealmlogo.png';
+import tofar from '../../images/tofar.png';
 
 export default function FooterSection() {
   const quickLinks = [
@@ -20,8 +20,8 @@ export default function FooterSection() {
         <div className="w-full flex flex-col items-start">
           <div className="flex items-center space-x-2 mb-4">
             {/* Using an SVG for the logo as it's scalable and matches the image */}
-            <img src={cargorealmlogo} alt="logo" className='w-[250px] h-[60px]' />
-            {/* <span className="text-xl font-semibold text-white">Tofar Logistics Agency</span> */}
+            <img src={tofar} alt="logo" className='w-[70px] h-[70px]' />
+            <span className="text-xl font-semibold text-white">Tofar Logistics Agency</span>
           </div>
           <p className="text-sm leading-relaxed">
             Your reliable partner for global cargo shipments. We provide efficient, secure, and timely logistics solutions tailored to your business needs, ensuring your goods reach their destination with care.
