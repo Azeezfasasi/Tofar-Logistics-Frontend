@@ -1,0 +1,26 @@
+import React from 'react'
+import Header from '../assets/component/HomeComponents.jsx/Header'
+import Footer from '../assets/component/HomeComponents.jsx/Footer'
+import AllBlog from '../assets/component/HomeComponents.jsx/AllBlog'
+import { Helmet } from 'react-helmet'
+import HeaderSection from '@/assets/component/HomeComponents.jsx/HeaderSection'
+import FooterSection from '@/assets/component/HomeComponents.jsx/FooterSection'
+import { SubscribePopUp } from '@/assets/component/HomeComponents.jsx/SubscribePopUp'
+import TawkToChat from '@/assets/component/HomeComponents.jsx/TawktoChat'
+
+function Blog() {
+  return (
+    <>
+    <TawkToChat />
+    <Helmet>
+      <title>Blog - Tofar Logistics Agency</title>
+    </Helmet>
+    <SubscribePopUp />
+    <HeaderSection />
+    <AllBlog />
+    <FooterSection />
+    </>
+  )
+}
+
+export default Blog
