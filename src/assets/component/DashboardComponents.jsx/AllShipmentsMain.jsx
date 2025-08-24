@@ -135,7 +135,7 @@ export default function AllShipmentsMain({ token }) {
     if (loading) { 
         return (
           <section className="py-8 sm:py-12 bg-gray-50 font-inter antialiased flex items-center justify-center min-h-[calc(100vh-120px)]">
-            <FaSpinner className="animate-spin text-green-600 text-4xl" />
+            <FaSpinner className="animate-spin text-blue-600 text-4xl" />
             <p className="ml-3 text-lg text-gray-700">Loading all shipments...</p>
           </section>
         );

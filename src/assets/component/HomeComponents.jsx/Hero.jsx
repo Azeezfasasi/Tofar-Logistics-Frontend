@@ -41,7 +41,7 @@ export default function Hero() {
   const goToNext = () => setCurrent((prev) => (prev === total - 1 ? 0 : prev + 1));
 
   return (
-    <section className="relative bg-green-600 font-sans overflow-hidden">
+    <section className="relative bg-blue-600 font-sans overflow-hidden">
       {/* Left Arrow Button */}
       <button className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white text-red-600 rounded-full p-2 shadow hover:bg-gray-100 z-20" onClick={goToPrev} aria-label="Previous Slide">
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" /></svg>
@@ -49,14 +49,14 @@ export default function Hero() {
 
       <div className="container mx-auto flex flex-col lg:flex-row items-center justify-between py-12 lg:py-20 px-4">
         {/* Left Section: Text Content */}
-        <div className="lg:w-1/2 w-full bg-green-600 text-white p-8 lg:p-6 rounded-lg flex flex-col justify-center relative z-10">
+        <div className="lg:w-1/2 w-full bg-blue-600 text-white p-8 lg:p-6 rounded-lg flex flex-col justify-center relative z-10">
           <h1 className="text-4xl lg:text-5xl font-extrabold leading-tight mb-6">
             {slides[current].headline}
           </h1>
           <p className="text-lg lg:text-xl mb-8 opacity-90">
             {slides[current].description}
           </p>
-          <Link to={slides[current].cta} className="flex items-center justify-center px-8 py-4 bg-white text-green-600 font-bold rounded-full shadow-md hover:bg-gray-100 transition duration-300 ease-in-out self-start">
+          <Link to={slides[current].cta} className="flex items-center justify-center px-8 py-4 bg-white text-blue-600 font-bold rounded-full shadow-md hover:bg-gray-100 transition duration-300 ease-in-out self-start">
             {slides[current].buttonText}
             <svg
               className="ml-3 w-5 h-5"
@@ -84,7 +84,7 @@ export default function Hero() {
             height={600}
             className="rounded-lg shadow-lg w-full h-auto object-cover transition-all duration-700"
           />
-          <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-transparent to-green-600 opacity-10 rounded-lg pointer-events-none"></div>
+          <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-transparent to-blue-600 opacity-10 rounded-lg pointer-events-none"></div>
         </div>
       </div>
       {/* Indicators */}
@@ -92,14 +92,14 @@ export default function Hero() {
         {slides.map((_, idx) => (
           <button
             key={idx}
-            className={`w-3 h-3 rounded-full transition-all duration-300 ${current === idx ? 'bg-green-600 scale-125' : 'bg-gray-300'}`}
+            className={`w-3 h-3 rounded-full transition-all duration-300 ${current === idx ? 'bg-blue-600 scale-125' : 'bg-gray-300'}`}
             onClick={() => setCurrent(idx)}
             aria-label={`Go to slide ${idx + 1}`}
           />
         ))}
       </div>
       {/* Right Arrow Button */}
-      <button className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white text-green-600 rounded-full p-2 shadow hover:bg-gray-100 z-20"
+      <button className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white text-blue-600 rounded-full p-2 shadow hover:bg-gray-100 z-20"
         onClick={goToNext} aria-label="Next Slide">
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>
       </button>

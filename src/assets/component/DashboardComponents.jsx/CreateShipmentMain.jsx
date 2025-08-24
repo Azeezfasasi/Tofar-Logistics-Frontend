@@ -116,8 +116,8 @@ export default function CreateShipmentForm({ token }) {
   };
 
   return (
-    <div className="max-w-3xl mx-auto mt-10 p-6 bg-white shadow-md rounded-2xl border border-solid border-green-600">
-      <h2 className="text-2xl font-semibold mb-6 text-green-700">Create New Shipment</h2>
+    <div className="max-w-3xl mx-auto mt-10 p-6 bg-white shadow-md rounded-2xl border border-solid border-blue-600">
+      <h2 className="text-2xl font-semibold mb-6 text-blue-700">Create New Shipment</h2>
       <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium mb-1">Tracking Number</label>
@@ -125,7 +125,7 @@ export default function CreateShipmentForm({ token }) {
             type="text"
             value={form.trackingNumber}
             readOnly
-            className="w-full border border-solid border-green-600 rounded p-2 focus:outline-none focus:ring focus:ring-green-600"
+            className="w-full border border-solid border-blue-600 rounded p-2 focus:outline-none focus:ring focus:ring-blue-600"
           />
         </div>
 
@@ -144,7 +144,7 @@ export default function CreateShipmentForm({ token }) {
               name="sender"
               value={form.sender}
               onChange={handleChange}
-              className="w-full border border-solid border-green-600 rounded p-2 focus:outline-none focus:ring focus:ring-green-600"
+              className="w-full border border-solid border-blue-600 rounded p-2 focus:outline-none focus:ring focus:ring-blue-600"
             >
               <option value="">Select user</option>
               {/* Ensure users is an array before mapping */}
@@ -165,7 +165,7 @@ export default function CreateShipmentForm({ token }) {
             value={form.senderName}
             placeholder='Enter the sender name'
             onChange={handleChange}
-            className="w-full border border-solid border-green-600 rounded p-2 focus:outline-none focus:ring focus:ring-green-600"
+            className="w-full border border-solid border-blue-600 rounded p-2 focus:outline-none focus:ring focus:ring-blue-600"
           />
         </div>
 
@@ -177,7 +177,7 @@ export default function CreateShipmentForm({ token }) {
             value={form.senderPhone}
             onChange={handleChange}
             placeholder='Enter the sender Phone Number'
-            className="w-full border border-solid border-green-600 rounded p-2 focus:outline-none focus:ring focus:ring-green-600"
+            className="w-full border border-solid border-blue-600 rounded p-2 focus:outline-none focus:ring focus:ring-blue-600"
           />
         </div>
 
@@ -189,7 +189,7 @@ export default function CreateShipmentForm({ token }) {
             value={form.senderEmail}
             onChange={handleChange}
             placeholder='Enter the sender Email Address'
-            className="w-full border border-solid border-green-600 rounded p-2 focus:outline-none focus:ring focus:ring-green-600"
+            className="w-full border border-solid border-blue-600 rounded p-2 focus:outline-none focus:ring focus:ring-blue-600"
           />
         </div>
 
@@ -201,7 +201,7 @@ export default function CreateShipmentForm({ token }) {
             value={form.senderAddress}
             onChange={handleChange}
             placeholder='Enter the sender Home Address'
-            className="w-full border border-solid border-green-600 rounded p-2 focus:outline-none focus:ring focus:ring-green-600"
+            className="w-full border border-solid border-blue-600 rounded p-2 focus:outline-none focus:ring focus:ring-blue-600"
           />
         </div>
 
@@ -213,7 +213,7 @@ export default function CreateShipmentForm({ token }) {
             value={form.recipientName}
             onChange={handleChange}
             placeholder='Enter the receiver name'
-            className="w-full border border-solid border-green-600 rounded p-2 focus:outline-none focus:ring focus:ring-green-600"
+            className="w-full border border-solid border-blue-600 rounded p-2 focus:outline-none focus:ring focus:ring-blue-600"
           />
         </div>
 
@@ -225,7 +225,7 @@ export default function CreateShipmentForm({ token }) {
             value={form.receiverEmail}
             onChange={handleChange}
             placeholder='Enter the receiver email'
-            className="w-full border border-solid border-green-600 rounded p-2 focus:outline-none focus:ring focus:ring-green-600"
+            className="w-full border border-solid border-blue-600 rounded p-2 focus:outline-none focus:ring focus:ring-blue-600"
           />
         </div>
 
@@ -237,7 +237,7 @@ export default function CreateShipmentForm({ token }) {
             value={form.recipientPhone}
             onChange={handleChange}
             placeholder='Enter the receiverphone number'
-            className="w-full border border-solid border-green-600 rounded p-2 focus:outline-none focus:ring focus:ring-green-600"
+            className="w-full border border-solid border-blue-600 rounded p-2 focus:outline-none focus:ring focus:ring-blue-600"
           />
         </div>
 
@@ -247,7 +247,7 @@ export default function CreateShipmentForm({ token }) {
             name="recipientAddress"
             value={form.recipientAddress}
             onChange={handleChange}
-            className="w-full border border-solid border-green-600 rounded p-2 focus:outline-none focus:ring focus:ring-green-600"
+            className="w-full border border-solid border-blue-600 rounded p-2 focus:outline-none focus:ring focus:ring-blue-600"
             placeholder='Enter the receiver home address'
             rows={2}
           />
@@ -261,7 +261,7 @@ export default function CreateShipmentForm({ token }) {
             value={form.origin}
             onChange={handleChange}
             placeholder='Enter the country/city of origin'
-            className="w-full border border-solid border-green-600 rounded p-2 focus:outline-none focus:ring focus:ring-green-600"
+            className="w-full border border-solid border-blue-600 rounded p-2 focus:outline-none focus:ring focus:ring-blue-600"
           />
         </div>
 
@@ -273,7 +273,7 @@ export default function CreateShipmentForm({ token }) {
             value={form.destination}
             onChange={handleChange}
             placeholder='Enter the country/city of destination'
-            className="w-full border border-solid border-green-600 rounded p-2 focus:outline-none focus:ring focus:ring-green-600"
+            className="w-full border border-solid border-blue-600 rounded p-2 focus:outline-none focus:ring focus:ring-blue-600"
           />
         </div>
 
@@ -285,7 +285,7 @@ export default function CreateShipmentForm({ token }) {
             value={form.weight}
             onChange={handleChange}
             placeholder='Enter the weight of the shipment in kg'
-            className="w-full border border-solid border-green-600 rounded p-2 focus:outline-none focus:ring focus:ring-green-600"
+            className="w-full border border-solid border-blue-600 rounded p-2 focus:outline-none focus:ring focus:ring-blue-600"
           />
         </div>
 
@@ -297,7 +297,7 @@ export default function CreateShipmentForm({ token }) {
             value={form.length}
             onChange={handleChange}
             placeholder='Optional:Enter the Length of the shipment'
-            className="w-full border border-solid border-green-600 rounded p-2 focus:outline-none focus:ring focus:ring-green-600"
+            className="w-full border border-solid border-blue-600 rounded p-2 focus:outline-none focus:ring focus:ring-blue-600"
           />
         </div>
 
@@ -309,7 +309,7 @@ export default function CreateShipmentForm({ token }) {
             value={form.width}
             onChange={handleChange}
             placeholder='Optional:Enter the width of the shipment'
-            className="w-full border border-solid border-green-600 rounded p-2 focus:outline-none focus:ring focus:ring-green-600"
+            className="w-full border border-solid border-blue-600 rounded p-2 focus:outline-none focus:ring focus:ring-blue-600"
           />
         </div>
 
@@ -321,7 +321,7 @@ export default function CreateShipmentForm({ token }) {
             value={form.height}
             onChange={handleChange}
             placeholder='Optional:Enter the height of the shipment'
-            className="w-full border border-solid border-green-600 rounded p-2 focus:outline-none focus:ring focus:ring-green-600"
+            className="w-full border border-solid border-blue-600 rounded p-2 focus:outline-none focus:ring focus:ring-blue-600"
           />
         </div>
 
@@ -333,7 +333,7 @@ export default function CreateShipmentForm({ token }) {
             value={form.volume}
             onChange={handleChange}
             placeholder='Optional: Enter the volume of the shipment'
-            className="w-full border border-solid border-green-600 rounded p-2 focus:outline-none focus:ring focus:ring-green-600"
+            className="w-full border border-solid border-blue-600 rounded p-2 focus:outline-none focus:ring focus:ring-blue-600"
           />
         </div>
 
@@ -345,7 +345,7 @@ export default function CreateShipmentForm({ token }) {
             value={form.cost}
             onChange={handleChange}
             placeholder='Optional: Enter the total cost of the shipment'
-            className="w-full border border-solid border-green-600 rounded p-2 focus:outline-none focus:ring focus:ring-green-600"
+            className="w-full border border-solid border-blue-600 rounded p-2 focus:outline-none focus:ring focus:ring-blue-600"
           />
         </div>
 
@@ -355,7 +355,7 @@ export default function CreateShipmentForm({ token }) {
             name="status"
             value={form.status}
             onChange={handleChange}
-            className="w-full border border-solid border-green-600 rounded p-2 focus:outline-none focus:ring focus:ring-green-600"
+            className="w-full border border-solid border-blue-600 rounded p-2 focus:outline-none focus:ring focus:ring-blue-600"
           >
             {[
               'pending',
@@ -398,7 +398,7 @@ export default function CreateShipmentForm({ token }) {
             name="shipmentDate"
             value={form.shipmentDate}
             onChange={handleChange}
-            className="w-full border border-solid border-green-600 rounded p-2 focus:outline-none focus:ring focus:ring-green-600"
+            className="w-full border border-solid border-blue-600 rounded p-2 focus:outline-none focus:ring focus:ring-blue-600"
           />
         </div>
 
@@ -409,7 +409,7 @@ export default function CreateShipmentForm({ token }) {
             name="deliveryDate"
             value={form.deliveryDate}
             onChange={handleChange}
-            className="w-full border border-solid border-green-600 rounded p-2 focus:outline-none focus:ring focus:ring-green-600"
+            className="w-full border border-solid border-blue-600 rounded p-2 focus:outline-none focus:ring focus:ring-blue-600"
           />
         </div>
 
@@ -419,7 +419,7 @@ export default function CreateShipmentForm({ token }) {
             name="notes"
             value={form.notes}
             onChange={handleChange}
-            className="w-full border border-solid border-green-600 rounded p-2 focus:outline-none focus:ring focus:ring-green-600"
+            className="w-full border border-solid border-blue-600 rounded p-2 focus:outline-none focus:ring focus:ring-blue-600"
             placeholder='Enter any notes or comments about the shipment here. You can also include all the items here.'
             rows={3}
           />
@@ -429,7 +429,7 @@ export default function CreateShipmentForm({ token }) {
           <button
             type="submit"
             disabled={mutation.isLoading}
-            className="w-full bg-green-600 text-white font-semibold py-2 rounded hover:bg-green-700 transition"
+            className="w-full bg-blue-600 text-white font-semibold py-2 rounded hover:bg-blue-700 transition"
           >
             {mutation.isLoading ? 'Creating Shipment...' : 'Create Shipment'}
           </button>

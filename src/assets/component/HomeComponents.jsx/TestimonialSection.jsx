@@ -39,8 +39,8 @@ export default function TestimonialSection() {
     <section className="bg-gray-50 py-16 px-4 font-sans">
       <div className="container mx-auto text-center">
         <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-12 relative inline-block">
-          Our <span className="text-green-600">Reviews</span>
-          <span className="block w-24 h-1 bg-green-600 mx-auto mt-2 rounded-full"></span>
+          Our <span className="text-blue-600">Reviews</span>
+          <span className="block w-24 h-1 bg-blue-600 mx-auto mt-2 rounded-full"></span>
         </h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -66,7 +66,7 @@ export default function TestimonialSection() {
                 <img
                   src={review.avatar}
                   alt={review.author}
-                  className="w-12 h-12 rounded-full object-cover border-2 border-green-600"
+                  className="w-12 h-12 rounded-full object-cover border-2 border-blue-600"
                     width={48}
                     height={48}
                 />

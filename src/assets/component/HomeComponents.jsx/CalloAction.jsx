@@ -24,11 +24,11 @@ export default function CallToAction() {
           <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight mb-4">
             {`WHAT'S`} YOUR SHIPPING NEED?
           </h2>
-          <div className="w-20 h-1 bg-green-600 mx-auto lg:mx-0 mb-6 rounded-full"></div>
+          <div className="w-20 h-1 bg-blue-600 mx-auto lg:mx-0 mb-6 rounded-full"></div>
           <p className="text-gray-700 text-lg mb-8">
             Need a custom solution to make your supply chain faster, leaner, and more efficient? Drop us a line and {`we'll`} provide you with a custom quote tailored to your cargo shipment requirements!
           </p>
-          <Link to="/app/requestquote" className="px-8 py-4 bg-green-600 text-white font-bold rounded-full shadow-md hover:bg-green-700 transition duration-300 ease-in-out self-center lg:self-start cursor-pointer">
+          <Link to="/app/requestquote" className="px-8 py-4 bg-blue-600 text-white font-bold rounded-full shadow-md hover:bg-blue-700 transition duration-300 ease-in-out self-center lg:self-start cursor-pointer">
             REQUEST A QUOTE
           </Link>
         </div>

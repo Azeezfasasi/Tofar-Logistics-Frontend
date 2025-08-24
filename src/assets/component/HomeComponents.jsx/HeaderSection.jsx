@@ -31,7 +31,7 @@ export default function HeaderSection() {
         {/* Desktop Navigation */}
         <nav className="hidden lg:flex flex-row items-center space-x-4">
           {navLinks.map((link) => (
-            <Link key={link.href} to={link.href} className="text-gray-700 hover:text-green-600 font-medium transition-colors">
+            <Link key={link.href} to={link.href} className="text-gray-700 hover:text-blue-600 font-medium transition-colors">
               {link.label}
             </Link>
           ))}
@@ -41,18 +41,18 @@ export default function HeaderSection() {
         <div className="hidden lg:flex items-center space-x-4">
           {/* Login Icon */}
           <div>
-            <a href="/app/dashboard" className="hidden md:inline-flex items-center p-2 bg-gray-100 text-gray-600 rounded-full hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300">
+            <Link to="/app/dashboard" className="hidden md:inline-flex items-center p-2 bg-gray-100 text-gray-600 rounded-full hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300">
               <img
                 src={user}
                 alt="Login Icon"
                 width={32}
                 height={32}
               />
-            </a>
+            </Link>
           </div>
 
           {/* Get A Quote Button */}
-          <Link to="/app/requestquote" className="px-6 py-2 bg-green-600 text-white font-medium rounded-full hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 z-50">
+          <Link to="/app/requestquote" className="px-6 py-2 bg-blue-600 text-white font-medium rounded-full hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 z-50">
             Get A Quote
           </Link>
         </div>
@@ -94,25 +94,25 @@ export default function HeaderSection() {
       {menuOpen && (
         <nav className="lg:hidden bg-white shadow-lg rounded-b-lg py-4 px-6 absolute left-0 right-0 top-full z-40 animate-slideDown">
           <div className="flex flex-col space-y-4">
-            <Link to="/" className="text-gray-700 hover:text-green-600 font-medium text-lg transition-colors" onClick={() => setMenuOpen(false)}>
+            <Link to="/" className="text-gray-700 hover:text-blue-600 font-medium text-lg transition-colors" onClick={() => setMenuOpen(false)}>
               Home
             </Link>
-            <Link to="/app/about" className="text-gray-700 hover:text-green-600 font-medium text-lg transition-colors" onClick={() => setMenuOpen(false)}>
+            <Link to="/app/about" className="text-gray-700 hover:text-blue-600 font-medium text-lg transition-colors" onClick={() => setMenuOpen(false)}>
               About Us
             </Link>
-            <Link to="/app/services" className="text-gray-700 hover:text-green-600 font-medium text-lg transition-colors" onClick={() => setMenuOpen(false)}>
+            <Link to="/app/services" className="text-gray-700 hover:text-blue-600 font-medium text-lg transition-colors" onClick={() => setMenuOpen(false)}>
               Our Services
             </Link>
-            <Link to="/app/trackshipment" className="text-gray-700 hover:text-green-600 font-medium text-lg transition-colors" onClick={() => setMenuOpen(false)}>
+            <Link to="/app/trackshipment" className="text-gray-700 hover:text-blue-600 font-medium text-lg transition-colors" onClick={() => setMenuOpen(false)}>
               Track Shipment
             </Link>
-            <Link to="/app/requestquote" className="text-gray-700 hover:text-green-600 font-medium text-lg transition-colors" onClick={() => setMenuOpen(false)}>
+            <Link to="/app/requestquote" className="text-gray-700 hover:text-blue-600 font-medium text-lg transition-colors" onClick={() => setMenuOpen(false)}>
               Request Quote
             </Link>
-            <Link to="/app/contactus" className="text-gray-700 hover:text-green-600 font-medium text-lg transition-colors" onClick={() => setMenuOpen(false)}>
+            <Link to="/app/contactus" className="text-gray-700 hover:text-blue-600 font-medium text-lg transition-colors" onClick={() => setMenuOpen(false)}>
               Contact Us
             </Link>
-            <Link to="/app/requestquote" className="px-6 py-2 bg-green-600 text-white font-medium rounded-full hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 text-center" onClick={() => setMenuOpen(false)}>
+            <Link to="/app/requestquote" className="px-6 py-2 bg-blue-600 text-white font-medium rounded-full hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-center" onClick={() => setMenuOpen(false)}>
               Get A Quote
             </Link>
           </div>

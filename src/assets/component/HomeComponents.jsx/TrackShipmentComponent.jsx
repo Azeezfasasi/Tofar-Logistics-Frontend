@@ -65,7 +65,7 @@ export default function TrackShipmentComponent() {
     <section className="bg-gray-50 py-16 px-4 font-sans">
       <div className="container mx-auto text-center">
         <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-4">
-          Track Your <span className="text-green-600">Shipment</span>
+          Track Your <span className="text-blue-600">Shipment</span>
         </h2>
         <p className="text-gray-700 text-lg mb-10 max-w-2xl mx-auto">
           Enter your tracking number below to get real-time updates on your cargo's journey.
@@ -77,13 +77,13 @@ export default function TrackShipmentComponent() {
             placeholder="Enter Tracking Number E.g: Car65648631970"
             value={trackingNumber}
             onChange={handleTrackingChange}
-            className="w-full md:w-1/2 lg:w-1/3 p-4 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-800"
+            className="w-full md:w-1/2 lg:w-1/3 p-4 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
             aria-label="Tracking Number"
             required
           />
           <button
             type="submit"
-            className="w-full md:w-auto px-8 py-4 bg-green-600 text-white font-bold rounded-lg shadow-md hover:bg-green-700 transition duration-300 ease-in-out flex items-center justify-center"
+            className="w-full md:w-auto px-8 py-4 bg-blue-600 text-white font-bold rounded-lg shadow-md hover:bg-blue-700 transition duration-300 ease-in-out flex items-center justify-center"
             disabled={isLoading}
           >
             {isLoading ? (
@@ -118,7 +118,7 @@ export default function TrackShipmentComponent() {
         )}
 
         {trackingResult && (
-          <div className="bg-white p-8 rounded-lg border border-solid border-green-400 shadow-xl max-w-3xl mx-auto text-left">
+          <div className="bg-white p-8 rounded-lg border border-solid border-blue-400 shadow-xl max-w-3xl mx-auto text-left">
             <h3 className="text-2xl font-bold text-gray-900 mb-4">
               Shipment Status: <span className={`font-extrabold capitalize ${trackingResult.status === 'Delivered' ? 'text-green-600' : 'text-blue-600'}`}>{trackingResult.status}</span></h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700 mb-6">

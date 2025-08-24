@@ -115,7 +115,7 @@ function ContactForm() {
                 placeholder="Your full Name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full px-5 py-4 bg-gray-100 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-800 placeholder-gray-500"
+                className="w-full px-5 py-4 bg-gray-100 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800 placeholder-gray-500"
                 required
               />
             </div>
@@ -126,7 +126,7 @@ function ContactForm() {
                 placeholder="Your Email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-5 py-4 bg-gray-100 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-800 placeholder-gray-500"
+                className="w-full px-5 py-4 bg-gray-100 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800 placeholder-gray-500"
                 required
               />
             </div>
@@ -137,12 +137,12 @@ function ContactForm() {
                 placeholder="Your Phone Number (Optional)"
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
-                className="w-full px-5 py-4 bg-gray-100 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-800 placeholder-gray-500"
+                className="w-full px-5 py-4 bg-gray-100 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800 placeholder-gray-500"
               />
             </div>
             <div>
               <label>Shipping Type</label>
-              <select name="shippingType" id="shippingType" value={shippingType} onChange={(e) => setShippingType(e.target.value)} className="w-full px-5 py-4 bg-gray-100 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-800 placeholder-gray-500">
+              <select name="shippingType" id="shippingType" value={shippingType} onChange={(e) => setShippingType(e.target.value)} className="w-full px-5 py-4 bg-gray-100 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800 placeholder-gray-500">
                 <option value="">Select Shipping Type</option>
                 <option value="Air Freight">Air Freight</option>
                 <option value="Sea Freight">Sea Freight</option>
@@ -157,7 +157,7 @@ function ContactForm() {
                 placeholder="Enter origin Country"
                 value={originCountry}
                 onChange={(e) => setOriginCountry(e.target.value)}
-                className="w-full px-5 py-4 bg-gray-100 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-800 placeholder-gray-500"
+                className="w-full px-5 py-4 bg-gray-100 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800 placeholder-gray-500"
               />
             </div>
             <div>
@@ -167,7 +167,7 @@ function ContactForm() {
                 placeholder="Enter destination country"
                 value={destinationCountry}
                 onChange={(e) => setDestinationCountry(e.target.value)}
-                className="w-full px-5 py-4 bg-gray-100 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-800 placeholder-gray-500"
+                className="w-full px-5 py-4 bg-gray-100 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800 placeholder-gray-500"
               />
             </div>
             <div className='grid grid-cols-3 gap-2'>
@@ -178,7 +178,7 @@ function ContactForm() {
                   placeholder="Enter weight (kg)"
                   value={weight}
                   onChange={(e) => setWeight(e.target.value)}
-                  className="w-full px-5 py-4 bg-gray-100 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-800 placeholder-gray-500"
+                  className="w-full px-5 py-4 bg-gray-100 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800 placeholder-gray-500"
                 />
               </div>
               <div>
@@ -188,7 +188,7 @@ function ContactForm() {
                   placeholder="Enter length (cm)"
                   value={length}
                   onChange={(e) => setLength(e.target.value)}
-                  className="w-full px-5 py-4 bg-gray-100 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-800 placeholder-gray-500"
+                  className="w-full px-5 py-4 bg-gray-100 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800 placeholder-gray-500"
                 />
               </div>
               <div>
@@ -198,25 +198,25 @@ function ContactForm() {
                   placeholder="Enter height (cm)"
                   value={height}
                   onChange={(e) => setHeight(e.target.value)}
-                  className="w-full px-5 py-4 bg-gray-100 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-800 placeholder-gray-500"
+                  className="w-full px-5 py-4 bg-gray-100 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800 placeholder-gray-500"
                 />
               </div>
             </div>
 
             <div>
-              <label>Shipping Details <span className='text-green-700 text-[14px]'>(You can list all the items you want to ship here)</span></label>
+              <label>Shipping Details <span className='text-blue-700 text-[14px]'>(You can list all the items you want to ship here)</span></label>
               <textarea
                 placeholder="You can list all the items you want to ship here"
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 rows="6"
-                className="w-full px-5 py-4 bg-gray-100 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-800 placeholder-gray-500 resize-y"
+                className="w-full px-5 py-4 bg-gray-100 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800 placeholder-gray-500 resize-y"
                 required
               ></textarea>
             </div>
             <button
               type="submit"
-              className="w-full px-8 py-4 bg-green-600 text-gray-900 font-semibold rounded-lg shadow-md hover:bg-green-700 transition duration-300 ease-in-out transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+              className="w-full px-8 py-4 bg-blue-600 text-gray-900 font-semibold rounded-lg shadow-md hover:bg-blue-700 transition duration-300 ease-in-out transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
               disabled={submitContactFormMutation.isPending} // Disable button when loading
             >
               {submitContactFormMutation.isPending ? (

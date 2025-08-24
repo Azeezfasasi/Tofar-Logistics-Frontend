@@ -112,7 +112,7 @@ function PrayerRequestMain() {
             Submit Your Prayer Request
           </h2>
           {sendPrayerRequestMutation.isSuccess && (
-            <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-md mb-4" role="alert">
+            <div className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded-md mb-4" role="alert">
               Your prayer request has been sent successfully!
             </div>
           )}

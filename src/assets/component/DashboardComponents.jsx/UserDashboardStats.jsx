@@ -32,7 +32,7 @@ function UserDashboardStats() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <Link
             to="/app/trackshipment"
-            className="bg-green-600 hover:bg-green-700 text-white px-6 py-4 rounded-xl shadow text-center"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-4 rounded-xl shadow text-center"
           >
             📦 Track a Shipment
           </Link>

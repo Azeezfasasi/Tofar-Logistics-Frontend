@@ -85,7 +85,7 @@ function AboutMain() {
           {/* Value 1 */}
           <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 text-left">
             <h4 className="text-xl font-semibold text-gray-900 mb-3">
-              <span className="text-green-600 mr-2">&bull;</span> Commitment to Action
+              <span className="text-blue-600 mr-2">&bull;</span> Commitment to Action
             </h4>
             <p className="text-gray-700 text-sm leading-relaxed">
               We believe in proactive service and delivering on our promises. We take decisive steps to ensure your cargo is handled efficiently and delivered on schedule, turning our commitment into tangible results.
@@ -94,7 +94,7 @@ function AboutMain() {
           {/* Value 2 */}
           <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 text-left">
             <h4 className="text-xl font-semibold text-gray-900 mb-3">
-              <span className="text-green-600 mr-2">&bull;</span> Customer-Centric Approach
+              <span className="text-blue-600 mr-2">&bull;</span> Customer-Centric Approach
             </h4>
             <p className="text-gray-700 text-sm leading-relaxed">
               We build an inclusive and respectful environment for our clients and partners. Our priority is to provide a seamless, supportive, and transparent experience where every customer feels valued and understood.
@@ -103,7 +103,7 @@ function AboutMain() {
           {/* Value 3 */}
           <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 text-left">
             <h4 className="text-xl font-semibold text-gray-900 mb-3">
-              <span className="text-green-600 mr-2">&bull;</span> Operational Excellence
+              <span className="text-blue-600 mr-2">&bull;</span> Operational Excellence
             </h4>
             <p className="text-gray-700 text-sm leading-relaxed">
               We are dedicated to continuous improvement and industry-leading knowledge. We stay ahead of logistics trends and best practices to provide smart, reliable, and innovative solutions for all your shipping needs.
@@ -112,7 +112,7 @@ function AboutMain() {
           {/* Value 4 */}
           <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 text-left">
             <h4 className="text-xl font-semibold text-gray-900 mb-3">
-              <span className="text-green-600 mr-2">&bull;</span> Ethical and Responsible Operations
+              <span className="text-blue-600 mr-2">&bull;</span> Ethical and Responsible Operations
             </h4>
             <p className="text-gray-700 text-sm leading-relaxed">
               Extending care and integrity beyond our transactions, we ensure every shipment is handled with the utmost responsibility. We are committed to ethical practices and the security of your goods throughout their journey.
@@ -121,7 +121,7 @@ function AboutMain() {
           {/* Value 5 */}
           <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 text-left">
             <h4 className="text-xl font-semibold text-gray-900 mb-3">
-              <span className="text-green-600 mr-2">&bull;</span> Empowerment and Growth
+              <span className="text-blue-600 mr-2">&bull;</span> Empowerment and Growth
             </h4>
             <p className="text-gray-700 text-sm leading-relaxed">
               We encourage and equip our team members to grow both professionally and personally. By fostering a culture of learning, we ensure our experts are always ready to provide you with the best possible service.
@@ -130,7 +130,7 @@ function AboutMain() {
           {/* Value 6 */}
           <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 text-left">
             <h4 className="text-xl font-semibold text-gray-900 mb-3">
-              <span className="text-green-600 mr-2">&bull;</span> Generous Value
+              <span className="text-blue-600 mr-2">&bull;</span> Generous Value
             </h4>
             <p className="text-gray-700 text-sm leading-relaxed">
               We inspire a spirit of generosity by providing clear communication, fair pricing, and exceptional service that goes above and beyond expectations. Our goal is to provide maximum value in every partnership.
@@ -143,7 +143,7 @@ function AboutMain() {
           <p className="text-lg font-semibold text-gray-700 mb-6">
             Ready to experience a new standard in logistics? Let's get your cargo moving.
           </p>
-          <Link to="/app/requestquote" className="inline-flex items-center px-8 py-4 bg-green-600 text-white font-semibold rounded-lg shadow-lg hover:bg-green-700 transition duration-300 ease-in-out transform hover:-translate-y-1" >
+          <Link to="/app/requestquote" className="inline-flex items-center px-8 py-4 bg-blue-600 text-white font-semibold rounded-lg shadow-lg hover:bg-blue-700 transition duration-300 ease-in-out transform hover:-translate-y-1" >
             Request Quote
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
               <path strokeLinecap="round" strokeLinejoin="round" d="M17.25 8.25L21 12m0 0l-3.75 3.75M21 12H3" />

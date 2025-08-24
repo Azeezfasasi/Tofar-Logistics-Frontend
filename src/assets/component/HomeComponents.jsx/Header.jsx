@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import donate2 from '../../images/donate2.svg';
 import account from '../../images/account.svg';
-import caclogo2 from '../../images/caclogo2.png';
+// import caclogo2 from '../../images/caclogo2.png';
 import logo1 from '../../images/logo1.png';
 
 function Header() {

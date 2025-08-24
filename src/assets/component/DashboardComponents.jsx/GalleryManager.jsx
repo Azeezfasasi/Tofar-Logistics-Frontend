@@ -119,7 +119,7 @@ function GalleryManager() {
                       />
                       <button
                         onClick={() => handleEdit(img._id)}
-                        className="bg-green-600 text-white px-4 py-1 mr-2 rounded"
+                        className="bg-blue-600 text-white px-4 py-1 mr-2 rounded"
                       >
                         Save
                       </button>

@@ -65,7 +65,7 @@ function SubscribeNowPopup() {
   };
 
   return (
-    <div className="lg:col-span-1 md:col-span-2 text-left p-6 rounded-xl bg-gray-200 shadow-lg border border-green-400 border-solid"> {/* Added padding and background for better visual */}
+    <div className="lg:col-span-1 md:col-span-2 text-left p-6 rounded-xl bg-gray-200 shadow-lg border border-blue-400 border-solid"> {/* Added padding and background for better visual */}
       <form onSubmit={handleSubmit} className="flex flex-col gap-4"> {/* Increased gap for better spacing */}
         {localError && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md relative" role="alert">
@@ -83,7 +83,7 @@ function SubscribeNowPopup() {
           placeholder="Your name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="flex-grow px-4 py-3 bg-gray-200 border border-green-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-green-900 placeholder-gray-500"
+          className="flex-grow px-4 py-3 bg-gray-200 border border-blue-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-blue-900 placeholder-gray-500"
           required
         />
         <input
@@ -91,12 +91,12 @@ function SubscribeNowPopup() {
           placeholder="Yourmail@gmail.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="flex-grow px-4 py-3 bg-gray-200 border border-green-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-green-900 placeholder-gray-500"
+          className="flex-grow px-4 py-3 bg-gray-200 border border-blue-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-blue-900 placeholder-gray-500"
           required
         />
         <button
           type="submit"
-          className="px-6 py-3 bg-green-500 text-gray-900 font-semibold rounded-lg shadow-md hover:bg-green-600 transition duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center cursor-pointer"
+          className="px-6 py-3 bg-blue-500 text-gray-900 font-semibold rounded-lg shadow-md hover:bg-blue-600 transition duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center cursor-pointer"
           disabled={subscribeMutation.isPending} // Disable button when loading
         >
           {subscribeMutation.isPending ? (

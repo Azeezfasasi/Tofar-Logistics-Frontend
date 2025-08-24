@@ -66,10 +66,10 @@ export default function WhoWeAre() {
   ];
 
   return (
-    <section className="relative bg-green-100 font-sans overflow-hidden">
+    <section className="relative bg-blue-100 font-sans overflow-hidden">
       <div className="container mx-auto flex flex-col lg:flex-row items-center justify-between">
         {/* Left Section: Content */}
-        <div className="lg:w-1/2 w-full bg-green-600 text-white p-8 md:p-16 lg:p-20 relative z-10 lg:rounded-r-full lg:mr-[-100px] lg:pr-32">
+        <div className="lg:w-1/2 w-full bg-blue-600 text-white p-8 md:p-16 lg:p-20 relative z-10 lg:rounded-r-full lg:mr-[-100px] lg:pr-32">
           {/* Diagonal cut effect using pseudo-elements or transform is complex with Tailwind for exact match,
               so we'll use a large rounded corner and negative margin to simulate the overlap.
               For a perfect diagonal, custom CSS with clip-path or SVG shape would be needed. */}

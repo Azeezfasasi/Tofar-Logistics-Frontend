@@ -34,7 +34,7 @@ export default function OurServicesSection() {
         <h3 className="text-sm uppercase tracking-widest text-gray-400 mb-2">WHAT WE DO</h3>
         <h2 className="text-3xl md:text-4xl font-extrabold mb-12 relative inline-block">
           FEATURED SERVICES
-          <span className="block w-24 h-1 bg-green-600 mx-auto mt-2 rounded-full"></span>
+          <span className="block w-24 h-1 bg-blue-600 mx-auto mt-2 rounded-full"></span>
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -43,11 +43,11 @@ export default function OurServicesSection() {
               key={index}
               className="bg-gray-800 p-8 rounded-lg shadow-lg flex flex-col items-start text-left transform hover:scale-105 transition duration-300 ease-in-out"
             >
-              <h4 className="text-xl font-bold mb-4 text-green-600">{service.title}</h4>
+              <h4 className="text-xl font-bold mb-4 text-blue-600">{service.title}</h4>
               <p className="text-gray-300 mb-6 flex-grow">{service.description}</p>
               <a
                 href="#" // Replace with actual link
-                className="text-green-600 font-semibold hover:underline flex items-center"
+                className="text-blue-600 font-semibold hover:underline flex items-center"
               >
                 LEARN MORE
                 <svg

@@ -34,7 +34,7 @@ export default function FooterSection() {
           <ul className="space-y-2">
             {quickLinks.map((link, index) => (
               <li key={index}>
-                <a href={link.href} className="text-gray-300 hover:text-green-600 transition duration-200">
+                <a href={link.href} className="text-gray-300 hover:text-blue-600 transition duration-200">
                   {link.name}
                 </a>
               </li>
@@ -47,27 +47,27 @@ export default function FooterSection() {
           <h4 className="text-lg font-bold text-white mb-4">Our Services</h4>
           <ul className="space-y-2">
             <li>
-              <Link to="" className="text-gray-300 hover:text-green-600 transition duration-200">
+              <Link to="" className="text-gray-300 hover:text-blue-600 transition duration-200">
                 Air Freight
               </Link>
             </li>
             <li>
-              <Link to="" className="text-gray-300 hover:text-green-600 transition duration-200">Sea Freight</Link>
+              <Link to="" className="text-gray-300 hover:text-blue-600 transition duration-200">Sea Freight</Link>
             </li>
             <li>
-              <Link to="" className="text-gray-300 hover:text-green-600 transition duration-200">Road Transport</Link>
+              <Link to="" className="text-gray-300 hover:text-blue-600 transition duration-200">Road Transport</Link>
             </li>
             <li>
-              <Link to="" className="text-gray-300 hover:text-green-600 transition duration-200">Warehousing</Link>
+              <Link to="" className="text-gray-300 hover:text-blue-600 transition duration-200">Warehousing</Link>
             </li>
             <li>
-              <Link to="" className="text-gray-300 hover:text-green-600 transition duration-200">Customs Brokerage</Link>
+              <Link to="" className="text-gray-300 hover:text-blue-600 transition duration-200">Customs Brokerage</Link>
             </li>
             <li>
-              <Link to="" className="text-gray-300 hover:text-green-600 transition duration-200">Express Delivery</Link>
+              <Link to="" className="text-gray-300 hover:text-blue-600 transition duration-200">Express Delivery</Link>
             </li>
             <li>
-              <Link to="" className="text-gray-300 hover:text-green-600 transition duration-200">Supply Chain Solutions</Link>
+              <Link to="" className="text-gray-300 hover:text-blue-600 transition duration-200">Supply Chain Solutions</Link>
             </li>
           </ul>
         </div>

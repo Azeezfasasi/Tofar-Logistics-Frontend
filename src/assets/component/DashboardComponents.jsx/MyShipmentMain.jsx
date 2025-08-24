@@ -33,7 +33,7 @@ const ShipmentDetailsModal = ({ shipment, onClose }) => {
             />
           </div>
 
-          <h3 className="text-2xl font-bold text-gray-800 border-b pb-2 mb-4">Shipment Details - <span className='text-green-600'>{shipment.trackingNumber}</span></h3>
+          <h3 className="text-2xl font-bold text-gray-800 border-b pb-2 mb-4">Shipment Details - <span className='text-blue-600'>{shipment.trackingNumber}</span></h3>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 text-gray-600">
             {/* Shipment details */}
@@ -141,7 +141,7 @@ const ShipmentDetailsModal = ({ shipment, onClose }) => {
             >
               <LuX className="w-6 h-6" /> Close
             </button>
-            <button onClick={window.print} className='flex bg-green-500 text-white transition-colors px-4 py-1 rounded-md ml-1 hover:bg-green-600 hover:text-white text-sm font-semibold cursor-pointer'>Print</button>
+            <button onClick={window.print} className='flex bg-blue-500 text-white transition-colors px-4 py-1 rounded-md ml-1 hover:bg-blue-600 hover:text-white text-sm font-semibold cursor-pointer'>Print</button>
           </div>
         </div>
       </div>
@@ -233,7 +233,7 @@ function MyShipmentsMain() {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center p-6 bg-gray-100 min-h-screen">
-        <FaSpinner className="animate-spin text-green-600 text-4xl" />
+        <FaSpinner className="animate-spin text-blue-600 text-4xl" />
         <p className="ml-3 text-lg text-gray-700">Loading your shipments...</p>
       </div>
     );
@@ -345,7 +345,7 @@ function MyShipmentsMain() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-left text-sm font-medium">
                     <div className="flex flex-wrap gap-2">
-                      <button onClick={() => handleView(shipment)} className="bg-green-50 text-green-600 hover:text-reen-700 transition-colors flex flex-row items-center justify-start gap-1 border border-solid border-green-600 p-1 cursor-pointer rounded-md">
+                      <button onClick={() => handleView(shipment)} className="bg-blue-50 text-blue-600 hover:text-reen-700 transition-colors flex flex-row items-center justify-start gap-1 border border-solid border-blue-600 p-1 cursor-pointer rounded-md">
                         <LuEye className="w-4 h-4" />
                         View
                       </button>

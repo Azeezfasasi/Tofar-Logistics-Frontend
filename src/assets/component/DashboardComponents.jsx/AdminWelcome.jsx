@@ -17,11 +17,11 @@ function AdminWelcome() {
         {/* Welcome Message */}
         <div className="mb-0">
           <h1 className="text-3xl font-bold text-gray-800">
-            {getGreeting()}, <span className='text-green-600'>{currentUser?.name}</span> 👋
+            {getGreeting()}, <span className='text-blue-600'>{currentUser?.name}</span> 👋
           </h1>
           <p className="text-gray-600 mt-1">Welcome to your dashboard</p>
           {currentUser?.role && (
-            <p className="mt-1 text-sm text-green-700 font-bold">
+            <p className="mt-1 text-sm text-blue-700 font-bold">
               Role: <span className="font-semibold capitalize text-gray-800">{currentUser?.role}</span>
             </p>
           )}

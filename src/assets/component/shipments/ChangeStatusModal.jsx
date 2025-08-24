@@ -55,7 +55,7 @@ export default function ChangeStatusModal({ shipment, onClose, onStatusChange })
           <SelectValue placeholder="Select status" />
         </SelectTrigger>
         <SelectContent>
-          <div className='bg-green-100'>
+          <div className='bg-blue-100'>
             {statusOptions.map((option) => (
             <SelectItem key={option} value={option}>
               <div className='capitalize'>{option.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</div>

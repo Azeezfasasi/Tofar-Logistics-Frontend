@@ -25,7 +25,7 @@ export default function HowItWorks() {
       <div className="container mx-auto flex flex-col lg:flex-row gap-12">
         {/* Left Section: How It Works */}
         <div className="lg:w-1/2 w-full">
-          <h3 className="text-green-600 text-sm uppercase tracking-widest mb-2">How It Work?</h3>
+          <h3 className="text-blue-600 text-sm uppercase tracking-widest mb-2">How It Work?</h3>
           <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight mb-10">
             The Amazing Steps Of Our Services
           </h2>
@@ -33,7 +33,7 @@ export default function HowItWorks() {
           <div className="space-y-8">
             {steps.map((step) => (
               <div key={step.number} className="flex items-start">
-                <div className="flex-shrink-0 w-10 h-10 bg-green-600 text-white rounded-full flex items-center justify-center font-bold text-lg mr-4">
+                <div className="flex-shrink-0 w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-lg mr-4">
                   {step.number}
                 </div>
                 <div>
@@ -46,7 +46,7 @@ export default function HowItWorks() {
         </div>
 
         {/* Right Section: Get In Touch Form */}
-        <div className="lg:w-1/2 w-full bg-green-600 p-8 md:p-12 rounded-lg shadow-xl">
+        <div className="lg:w-1/2 w-full bg-blue-600 p-8 md:p-12 rounded-lg shadow-xl">
           <ContactForm />
         </div>
           
