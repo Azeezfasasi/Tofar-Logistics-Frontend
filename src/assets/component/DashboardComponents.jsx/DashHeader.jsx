@@ -26,17 +26,6 @@ function DashHeader() {
   // const [openDropdown, setOpenDropdown] = useState(false);
   const menuRef = useRef();
 
-  // Close dropdown if clicked outside
-  // useEffect(() => {
-  //   const handler = (e) => {
-  //     if (menuRef.current && !menuRef.current.contains(e.target)) {
-  //       setOpenDropdown(false);
-  //     }
-  //   };
-  //   document.addEventListener('mousedown', handler);
-  //   return () => document.removeEventListener('mousedown', handler);
-  // }, []);
-
   const toggleMenu = () => {
     setIsOpen(!isOpen);
   };
@@ -81,16 +70,6 @@ function DashHeader() {
             className="h-[60px] w-[60px] md:h-70px] md:w-[70px] mr-0"
           />
         </Link>
-
-        {/* Desktop Navigation */}
-        {/* <div className="hidden lg:flex items-center space-x-6 text-lg">
-          <Link to="/" className="hover:text-orange-400 transition-colors duration-300">Home</Link>
-          <Link to="/app/about" className="hover:text-orange-400 transition-colors duration-300">About Us</Link>
-          <Link to="/app/prayerrequest" className="hover:text-orange-400 transition-colors duration-300">Prayer Requests</Link>
-          <Link to="/app/blog" className="hover:text-orange-400 transition-colors duration-300">Blog</Link>
-          <Link to="/app/gallery" className="hover:text-orange-400 transition-colors duration-300">Gallery</Link>
-          <Link to="/app/contactus" className="hover:text-orange-400 transition-colors duration-300">Contact Us</Link>
-        </div> */}
 
         {/* Icons for Desktop (User, Wishlist, Cart) */}
         <div className="hidden lg:flex items-center space-x-4" ref={menuRef}>
