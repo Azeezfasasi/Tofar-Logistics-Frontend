@@ -130,21 +130,14 @@ export default function TrackShipmentComponent() {
             <h3 className="text-2xl font-bold text-gray-900 mb-4">
               Shipment Status: <br className='md:hidden' /> <span className={`font-extrabold capitalize ${trackingResult.status === 'Delivered' ? 'text-blue-600' : 'text-blue-600'}`}>{trackingResult.status}</span></h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700 mb-6">
-              <p><strong>Sender Name:</strong> {trackingResult.senderName || 'N/A'}</p>
-              <p><strong>Receiver Name:</strong> {trackingResult.recipientName || 'N/A'}</p>
-              <p>
-                <strong>Shipment Items:</strong>{' '}
-                {Array.isArray(trackingResult.items)
-                  ? trackingResult.items.length > 0
-                    ? trackingResult.items.join(', ')
-                    : 'N/A'
-                  : (trackingResult.items || 'N/A')}
-              </p>
-              <p><strong>Shipment Pieces:</strong> {trackingResult.shipmentPieces || 'N/A'}</p>
-              <p><strong>Shipment Type:</strong> {trackingResult.shipmentType || 'N/A'}</p>
-              <p><strong>Shipment Purpose:</strong> {trackingResult.shipmentPurpose || 'N/A'}</p>
-              <p><strong>Origin Country:</strong> {trackingResult.origin || 'N/A'}</p>
-              <p><strong>Destination Country:</strong> {trackingResult.destination || 'N/A'}</p>
+              <p><strong>Sender Name:</strong> {trackingResult.senderName}</p>
+              <p><strong>Receiver Name:</strong> {trackingResult.recipientName}</p>
+              <p><strong>Shipment Items:</strong> {trackingResult.items.join(', ')}</p>
+              <p><strong>Shipment Pieces:</strong> {trackingResult.shipmentPieces}</p>
+              <p><strong>Shipment Type:</strong> {trackingResult.shipmentType}</p>
+              <p><strong>Shipment Purpose:</strong> {trackingResult.shipmentPurpose}</p>
+              <p><strong>Origin Country:</strong> {trackingResult.origin}</p>
+              <p><strong>Destination Country:</strong> {trackingResult.destination}</p>
               <p><strong>Shipment Date:</strong> {formatDate(trackingResult.shipmentDate)}</p>
               <p><strong>Estimated Delivery:</strong> {formatDate(trackingResult.deliveryDate)}</p>
             </div>

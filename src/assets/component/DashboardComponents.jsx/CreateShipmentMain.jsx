@@ -10,7 +10,7 @@ import { API_BASE_URL } from '../../../config/Api';
 
 const generateTrackingNumber = () => {
   const rand = Math.floor(10000000000 + Math.random() * 90000000000);
-  return `CAR${rand}`;
+  return `TLA${rand}`;
 };
 
 export default function CreateShipmentForm({ token }) {
