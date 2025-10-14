@@ -23,7 +23,7 @@ const ShipmentToolbar = ({
           placeholder="Search by name, ID or destination"
           value={searchQuery}
           onChange={(e) => onSearch(e.target.value)}
-          className="w-full md:w-64"
+          className="w-full md:w-64 border border-blue-400 focus:border-blue-600 focus:ring-0"
         />
       </div>
 
@@ -97,7 +97,7 @@ const ShipmentToolbar = ({
           <option value="Arrived at an international sorting facility and will be ready for delivery soon" className="text-wrap">Arrived at an international sorting facility and will be ready for delivery soon</option>
         </select>
 
-        <Button variant="outline" onClick={onExport}>
+        <Button variant="outline" onClick={onExport} className="cursor-pointer">
           <Download className="mr-2 h-4 w-4" /> Export
         </Button>
       </div>

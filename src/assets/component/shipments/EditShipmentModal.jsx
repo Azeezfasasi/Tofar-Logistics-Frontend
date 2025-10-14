@@ -240,8 +240,8 @@ export default function EditShipmentModal({ shipment, onClose, onSave }) {
         <label>Notes</label>
         <textarea name="notes" placeholder="Additional Details" value={formData.notes} onChange={handleChange} className='w-full border border-solid border-green-600 rounded p-2 focus:outline-none focus:ring focus:ring-green-600' />
         <div className="flex justify-end space-x-2 mt-5">
-          <Button variant="outline" onClick={onClose}>Cancel</Button>
-          <Button variant="outline" onClick={handleSubmit}>Save Changes</Button>
+          <Button variant="outline" onClick={onClose} className="cursor-pointer bg-red-200 hover:bg-red-300">Cancel</Button>
+          <Button variant="outline" onClick={handleSubmit} className="cursor-pointer bg-green-600 hover:bg-green-700 text-white">Save Changes</Button>
         </div>
       </div>
     </div>

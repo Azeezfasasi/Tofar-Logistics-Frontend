@@ -30,10 +30,10 @@ export default function ReplyModal({ shipment, onSendReply, onClose }) {
         onChange={(e) => setMessage(e.target.value)}
       />
       <div className="flex justify-end gap-2 pt-2">
-        <Button variant="outline" onClick={onClose}>
+        <Button variant="outline" onClick={onClose} className="cursor-pointer bg-red-200 hover:bg-red-300">
           Cancel
         </Button>
-        <Button variant="outline" onClick={handleSend}>
+        <Button variant="outline" onClick={handleSend} className="cursor-pointer bg-green-600 hover:bg-green-700 text-white">
           Send Reply
         </Button>
       </div>

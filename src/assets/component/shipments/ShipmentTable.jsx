@@ -83,19 +83,19 @@ export default function ShipmentTable({ shipments, onActionClick }) {
               <td className="p-3">{shipment.shipmentFacility}</td>
               <td className="p-3">{new Date(shipment.createdAt).toLocaleDateString()}</td>
               <td className="p-3 space-x-1">
-                <Button size="icon" variant="ghost" onClick={() => onActionClick(shipment, 'edit')}>
-                  <Pencil size={16} />
-                </Button>
-                <Button size="icon" variant="ghost" onClick={() => onActionClick(shipment, 'reply')}>
-                  <Mail size={16} />
-                </Button>
-                <Button size="icon" variant="ghost" onClick={() => onActionClick(shipment, 'status')}>
-                  <RefreshCcw size={16} />
-                </Button>
-                <Button size="icon" variant="ghost" onClick={() => onActionClick(shipment, 'print')}>
+                <Button size="icon" variant="ghost" onClick={() => onActionClick(shipment, 'print')} className='cursor-pointer hover:bg-purple-100'>
                   <Eye size={16} />
                 </Button>
-                <Button size="icon" variant="ghost" onClick={() => onActionClick(shipment, 'delete')}>
+                <Button size="icon" variant="ghost" onClick={() => onActionClick(shipment, 'edit')} className='cursor-pointer hover:bg-blue-100'>
+                  <Pencil size={16} />
+                </Button>
+                <Button size="icon" variant="ghost" onClick={() => onActionClick(shipment, 'reply')} className='cursor-pointer hover:bg-green-100'>
+                  <Mail size={16} />
+                </Button>
+                <Button size="icon" variant="ghost" onClick={() => onActionClick(shipment, 'status')} className='cursor-pointer hover:bg-yellow-100'>
+                  <RefreshCcw size={16} />
+                </Button>
+                <Button size="icon" variant="ghost" onClick={() => onActionClick(shipment, 'delete')} className='cursor-pointer hover:bg-red-100'>
                   <Trash2 size={16} className="text-red-500" />
                 </Button>
               </td>
