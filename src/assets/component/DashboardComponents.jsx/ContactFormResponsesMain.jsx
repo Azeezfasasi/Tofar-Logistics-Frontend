@@ -14,7 +14,7 @@ const formatTimestamp = (timestamp) => {
 
 function ContactFormResponsesMain() {
   const queryClient = useQueryClient();
-  const { isAuthenticated, isAdmin, isPastor, isLoading: authLoading } = useProfile();
+  const { isAuthenticated, isAdmin, isEmployee, isLoading: authLoading } = useProfile();
 
   // State for editing mode
   const [editingContactId, setEditingContactId] = useState(null);
@@ -42,9 +42,9 @@ function ContactFormResponsesMain() {
   }, [editingContactId, showReplyModal]);
 
   // Determine if the user has permission to manage contact forms
-  const hasPermission = isAuthenticated && (isAdmin || isPastor);
+  const hasPermission = isAuthenticated && (isAdmin || isEmployee);
 
-  // Fetch all contact forms for admin/pastor management
+  // Fetch all contact forms for admin/employee management
   const {
     data: contacts,
     isLoading: contactsLoading,
@@ -53,12 +53,12 @@ function ContactFormResponsesMain() {
   } = useQuery({
     queryKey: ['allContactForms'], // Unique key for fetching all contact forms
     queryFn: async () => {
-      // This endpoint is now accessible by admin and pastor on the backend
+      // This endpoint is now accessible by admin and employee on the backend
       const response = await axios.get(`${API_BASE_URL}/contact`);
       return response.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); // Sort by creation date
     },
     staleTime: 5 * 60 * 1000,
-    enabled: hasPermission, // Only run if authenticated AND (isAdmin OR isPastor)
+    enabled: hasPermission, // Only run if authenticated AND (isAdmin OR isEmployee)
   });
 
   // Mutation for editing a contact form
@@ -202,12 +202,12 @@ function ContactFormResponsesMain() {
     );
   }
 
-  // Check if user is authenticated AND (isAdmin OR isPastor)
+  // Check if user is authenticated AND (isAdmin OR isEmployee)
   if (!hasPermission) {
     return (
       <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50 font-inter min-h-screen flex items-center justify-center overflow-x-hidden">
         <div className="text-center text-lg text-red-600">
-          Access Denied. You must be logged in as an Administrator or Pastor to manage contact forms.
+          Access Denied. You must be logged in as an Administrator or Employee to manage contact forms.
           <div className="mt-4">
             <Link to="/login" className="text-blue-600 hover:underline">Go to Login</Link>
           </div>
@@ -238,7 +238,7 @@ function ContactFormResponsesMain() {
         <div className="text-center text-lg text-red-600">
           Error loading contact forms: {fetchError.response?.data?.message || fetchError.message}
           <br/>
-          Please ensure your backend route `/contact-forms` is configured to allow 'pastor' role access if intended.
+          Please ensure your backend route `/contact-forms` is configured to allow 'employee' role access if intended.
         </div>
       </section>
     );
