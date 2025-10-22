@@ -130,7 +130,7 @@ function AllUserMain() {
     setEditingUserId(user._id);
     setEditName(user.name || '');
     setEditEmail(user.email || '');
-    setEditRole(user.role || 'member');
+    setEditRole(user.role || '');
     setEditGender(user.gender || '');
     setEditPhoneNumber(user.phoneNumber || '');
     setEditHomeAddress(user.homeAddress || '');
@@ -334,14 +334,14 @@ function AllUserMain() {
                           <div className="flex justify-end space-x-2">
                             <button
                               onClick={handleSaveEdit}
-                              className="text-blue-600 hover:text-blue-900 disabled:opacity-50"
+                              className="text-blue-600 hover:text-blue-900 disabled:opacity-50 cursor-pointer"
                               disabled={editUserMutation.isPending}
                             >
                               {editUserMutation.isPending ? 'Saving...' : 'Save'}
                             </button>
                             <button
                               onClick={() => setEditingUserId(null)}
-                              className="text-gray-600 hover:text-gray-900"
+                              className="text-gray-600 hover:text-gray-900 cursor-pointer"
                               disabled={editUserMutation.isPending}
                             >
                               Cancel
@@ -351,20 +351,20 @@ function AllUserMain() {
                           <div className="flex justify-end space-x-2">
                             <button
                               onClick={() => handleEditClick(user)}
-                              className="text-indigo-600 hover:text-indigo-900"
+                              className="text-indigo-600 hover:text-indigo-900 cursor-pointer"
                             >
                               Edit
                             </button>
                             <button
                               onClick={() => handleDeleteClick(user._id)}
-                              className="text-red-600 hover:text-red-900 disabled:opacity-50"
+                              className="text-red-600 hover:text-red-900 disabled:opacity-50 cursor-pointer"
                               disabled={deleteUserMutation.isPending}
                             >
                               Delete
                             </button>
                             <button
                               onClick={() => handleToggleDisable(user._id, user.isDisabled)}
-                              className={`text-sm px-2 py-1 rounded-md ${
+                              className={`text-sm px-2 py-1 rounded-md cursor-pointer ${
                                 user.isDisabled ? 'bg-blue-500 text-white hover:bg-blue-600' : 'bg-red-500 text-white hover:bg-red-600'
                               } disabled:opacity-50`}
                               disabled={toggleDisableUserMutation.isPending}
@@ -373,7 +373,7 @@ function AllUserMain() {
                             </button>
                             <button
                               onClick={() => handleToggleSuspend(user._id, user.isSuspended)}
-                              className={`text-sm px-2 py-1 rounded-md ${
+                              className={`text-sm px-2 py-1 rounded-md cursor-pointer ${
                                 user.isSuspended ? 'bg-blue-500 text-white hover:bg-blue-600' : 'bg-orange-500 text-white hover:bg-orange-600'
                               } disabled:opacity-50`}
                               disabled={toggleSuspendUserMutation.isPending}

@@ -44,7 +44,7 @@ function ContactFormResponsesMain() {
   // Determine if the user has permission to manage contact forms
   const hasPermission = isAuthenticated && (isAdmin || isEmployee);
 
-  // Fetch all contact forms for admin/pastor management
+  // Fetch all contact forms for admin/employee management
   const {
     data: contacts,
     isLoading: contactsLoading,
@@ -53,7 +53,7 @@ function ContactFormResponsesMain() {
   } = useQuery({
     queryKey: ['allContactForms'], // Unique key for fetching all contact forms
     queryFn: async () => {
-      // This endpoint is now accessible by admin and pastor on the backend
+      // This endpoint is now accessible by admin and employee on the backend
       const response = await axios.get(`${API_BASE_URL}/contact`);
       return response.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); // Sort by creation date
     },
@@ -207,7 +207,7 @@ function ContactFormResponsesMain() {
     return (
       <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50 font-inter min-h-screen flex items-center justify-center overflow-x-hidden">
         <div className="text-center text-lg text-red-600">
-          Access Denied. You must be logged in as an Administrator or Pastor to manage contact forms.
+          Access Denied. You must be logged in as an Administrator or Employee to manage contact forms.
           <div className="mt-4">
             <Link to="/login" className="text-blue-600 hover:underline">Go to Login</Link>
           </div>
@@ -238,7 +238,7 @@ function ContactFormResponsesMain() {
         <div className="text-center text-lg text-red-600">
           Error loading contact forms: {fetchError.response?.data?.message || fetchError.message}
           <br/>
-          Please ensure your backend route `/contact-forms` is configured to allow 'pastor' role access if intended.
+          Please ensure your backend route `/contact-forms` is configured to allow 'employee' role access if intended.
         </div>
       </section>
     );
@@ -248,7 +248,7 @@ function ContactFormResponsesMain() {
     <section className="py-16 px-2 sm:px-3 lg:px-4 bg-gray-100 font-inter overflow-x-hidden">
       <div className="max-w-7xl mx-auto">
         <h2 className="text-3xl font-bold text-center text-gray-900 mb-8">
-          Manage Contact Forms
+          Manage Quote Requests
         </h2>
 
         {actionMessage && (

@@ -46,7 +46,7 @@ export default function HowItWorks() {
         </div>
 
         {/* Right Section: Get In Touch Form */}
-        <div className="lg:w-1/2 w-full bg-blue-600 p-8 md:p-12 rounded-lg shadow-xl">
+        <div className="lg:w-1/2 w-full bg-blue-300 p-8 md:p-12 rounded-lg shadow-xl">
           <ContactForm />
         </div>
           

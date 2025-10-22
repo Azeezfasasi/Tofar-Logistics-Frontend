@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { FaPlus, FaTrash } from 'react-icons/fa';
 
 export default function EditShipmentModal({ shipment, onClose, onSave }) {
   const [formData, setFormData] = useState({
@@ -23,12 +24,19 @@ export default function EditShipmentModal({ shipment, onClose, onSave }) {
     height: '',
     volume: '',
     cost: '',
+    items: [],
+    shipmentPieces: '',
+    shipmentType: '',
+    shipmentPurpose: '',
+    shipmentFacility: '',
   });
+
+  // State for the new item input
+  const [newItem, setNewItem] = useState('');
 
   useEffect(() => {
     if (shipment) {
       setFormData({
-        // sender: shipment.sender?.name || shipment.sender.name ||  '',
         senderName: shipment.senderName || '',
         senderPhone: shipment.senderPhone || '',
         senderEmail: shipment.senderEmail || '',
@@ -46,7 +54,12 @@ export default function EditShipmentModal({ shipment, onClose, onSave }) {
         width: shipment.width || '',
         height: shipment.height || '',
         volume: shipment.volume || '',
-        cost: shipment.cost || ''
+        cost: shipment.cost || '',
+        items: shipment.items || [],
+        shipmentPieces: shipment.shipmentPieces || '',
+        shipmentType: shipment.shipmentType || '',
+        shipmentPurpose: shipment.shipmentPurpose || '',
+        shipmentFacility: shipment.shipmentFacility || '',
       });
     }
   }, [shipment]);
@@ -59,6 +72,26 @@ export default function EditShipmentModal({ shipment, onClose, onSave }) {
   const handleSubmit = () => {
     onSave({ ...shipment, ...formData });
     onClose();
+  };
+
+  const handleAddItem = (e) => {
+    e.preventDefault();
+    if (newItem.trim() !== '') {
+      // ✅ Corrected: Update formData state instead of 'form'
+      setFormData(prevFormData => ({
+        ...prevFormData,
+        items: [...prevFormData.items, newItem.trim()]
+      }));
+      setNewItem('');
+    }
+  };
+
+  const handleRemoveItem = (index) => {
+    // ✅ Corrected: Update formData state instead of 'form'
+    setFormData(prevFormData => ({
+      ...prevFormData,
+      items: prevFormData.items.filter((_, i) => i !== index)
+    }));
   };
 
   return (
@@ -114,45 +147,101 @@ export default function EditShipmentModal({ shipment, onClose, onSave }) {
       <label>Destination</label>
       <Input name="destination" placeholder="Destination" value={formData.destination} onChange={handleChange} />
 
-      <label className=''>
-        Status
-      <select name="status" id="status" value={formData.status} onChange={handleChange} className='w-full border p-2 rounded-md'>
-        <option value="">Change Status</option>
-        <option value="processing">Processing</option>
-        <option value="pending">Pending</option>
-        <option value="in-transit">In Transit</option>
-        <option value="arrived-at-hub">Arrived at Hub</option>
-        <option value="departed-from-hub">Departed from Hub</option>
-        <option value="out-for-delivery">Out for Delivery</option>
-        <option value="pickup-scheduled">Pickup Scheduled</option>
-        <option value="delivered">Delivered</option>
-        <option value="cancelled">Cancelled</option>
-        <option value="picked-up">Picked Up</option>
-        <option value="on-hold">On Hold</option>
-        <option value="customs-clearance">Customs Clearance</option>
-        <option value="Awaiting Pickup">Awaiting Pickup</option>
-        <option value="failed-delivery-attempt">Failed Delivery Attempt</option>
-        <option value="Awaiting Delivery">Awaiting Delivery</option>
-        
-        <option value="Arrived Carrier Connecting facility">Arrived Carrier Connecting facility</option>
-        <option value="Departed Tofar Logistics facility (Nig)">Departed Tofar Logistics Agency (Nig)</option>
-        <option value="Arrived nearest airport', 'Shipment is Delayed">Arrived nearest airport', 'Shipment is Delayed</option>
-        <option value="Delivery date not available">Delivery date not available</option>
-        <option value="Available for pick up,check phone for instructions">Available for pick up,check phone for instructions</option>
-        <option value="Processed in Lagos Nigeria">Processed in Lagos Nigeria</option>
-        <option value="Pending Carrier lift">Pending Carrier lift</option>
-        <option value="Scheduled to depart on the next movement">Scheduled to depart on the next movement</option>
-        <option value="Received from flight">Received from flight</option>
-        <option value="Package is received and accepted by airline">Package is received and accepted by airline</option>
-        </select>
-      </label>
-      
+      <label>Shipment Type</label>
+      <select name="shipmentType" value={formData.shipmentType} onChange={handleChange} className='w-full border border-solid border-blue-600 rounded p-2 focus:outline-none focus:ring focus:ring-blue-600'>
+        <option value="">Choose Shipment Type</option>
+        <option value="Boxes">Boxes</option>
+        <option value="Padding">Padding</option>
+        <option value="Package">Package</option>
+        <option value="Document">Document</option>
+        <option value="Other">Other</option>
+      </select>
+
+      <label>Shipment Pieces</label>
+      <textarea
+        name="shipmentPieces"
+        value={formData.shipmentPieces}
+        onChange={handleChange}
+        placeholder='Enter the Pieces of the shipment'
+        className="w-full border border-solid border-blue-600 rounded p-2 focus:outline-none focus:ring focus:ring-blue-600">
+      </textarea>
+
+      <label>Shipment Purpose</label>
+      <select name="shipmentPurpose" value={formData.shipmentPurpose} onChange={handleChange} className='w-full border border-solid border-blue-600 rounded p-2 focus:outline-none focus:ring focus:ring-blue-600'>
+        <option value="">Choose Shipment Purpose</option>
+        <option value="Personal">Personal</option>
+        <option value="Gift">Gift</option>
+        <option value="Commercial">Commercial</option>
+        <option value="Return for Repair">Return for Repair</option>
+        <option value="Sample">Sample</option>
+        <option value="Other">Other</option>
+      </select>
+
+      <label>Shipment Facility</label>
+      <select name="shipmentFacility" value={formData.shipmentFacility} onChange={handleChange} className='w-full border border-solid border-green-600 rounded p-2 focus:outline-none focus:ring focus:ring-green-600'>
+        <option value="">Choose Shipment Facility</option>
+        <option value="Lagos">Lagos</option>
+        <option value="Atlanta">Atlanta</option>
+        <option value="Indianapolis">Indianapolis</option>
+        <option value="New York">New York</option>
+        <option value="New Jersey">New Jersey</option>
+        <option value="Maryland">Maryland</option>
+        <option value="Dallas">Dallas</option>
+        <option value="Houston">Houston</option>
+        <option value="United States of America">United States of America</option>
+        <option value="Canada">Canada</option>
+        <option value="Ontario">Ontario</option>
+        <option value="Calgary">Calgary</option>
+        <option value="Edmonton">Edmonton</option>
+        <option value="United Kingdom">United Kingdom</option>
+      </select>
+
+      {/* section for adding items */}
+      <div className="md:col-span-2">
+          <label className="block text-sm font-medium mb-1">Items in Shipment</label>
+          <div className="flex items-center space-x-2 mb-2">
+              <input
+                type="text"
+                value={newItem}
+                onChange={(e) => setNewItem(e.target.value)}
+                placeholder="e.g., 'Food Items, Electronics, Clothing etc.'"
+                className='w-full border border-solid border-green-600 rounded p-2 focus:outline-none focus:ring focus:ring-green-600'
+              />
+              <Button
+                type="button"
+                onClick={handleAddItem}
+                className="p-2 bg-green-600 text-white rounded hover:bg-green-700 transition flex items-center justify-center"
+              >
+                <FaPlus />
+              </Button>
+          </div>
+
+          {/* Display items from formData state */}
+          {formData.items.length > 0 && (
+              <ul className="border border-solid border-gray-300 rounded p-2">
+                  {formData.items.map((item, index) => (
+                      <li key={index} className="flex justify-between items-center py-1">
+                          <span>{item}</span>
+                          <Button
+                              type="button"
+                              onClick={() => handleRemoveItem(index)}
+                              className="text-red-600 hover:text-red-800 transition"
+                              variant="ghost"
+                          >
+                              <FaTrash />
+                          </Button>
+                      </li>
+                  ))}
+              </ul>
+          )}
+      </div>
+
       <div className='mt-4 flex flex-col'>
         <label>Notes</label>
-        <Textarea name="notes" placeholder="Additional Details" value={formData.notes} onChange={handleChange} />
+        <textarea name="notes" placeholder="Additional Details" value={formData.notes} onChange={handleChange} className='w-full border border-solid border-green-600 rounded p-2 focus:outline-none focus:ring focus:ring-green-600' />
         <div className="flex justify-end space-x-2 mt-5">
-          <Button variant="outline" onClick={onClose}>Cancel</Button>
-          <Button variant="outline" onClick={handleSubmit}>Save Changes</Button>
+          <Button variant="outline" onClick={onClose} className="cursor-pointer bg-red-200 hover:bg-red-300">Cancel</Button>
+          <Button variant="outline" onClick={handleSubmit} className="cursor-pointer bg-green-600 hover:bg-green-700 text-white">Save Changes</Button>
         </div>
       </div>
     </div>

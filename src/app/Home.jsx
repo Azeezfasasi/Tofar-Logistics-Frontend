@@ -20,6 +20,7 @@ import FooterSection from '../assets/component/HomeComponents.jsx/FooterSection'
 import HeaderSection from '../assets/component/HomeComponents.jsx/HeaderSection'
 import { SubscribePopUp } from '@/assets/component/HomeComponents.jsx/SubscribePopUp'
 import TawkToChat from '@/assets/component/HomeComponents.jsx/TawktoChat'
+import ReachDestinationCTA from '@/assets/component/HomeComponents.jsx/ReachDestinationCTA'
 
 function Home() {
   return (
@@ -27,10 +28,14 @@ function Home() {
       <TawkToChat />
       <Helmet>
         <title>Tofar Logistics Agency</title>
+        <meta name="description" content="Tofar Logistics Agency - Reliable and Efficient Logistics Solutions for Your Business. Experience Seamless Shipping, Freight, and Supply Chain Management with Us." />
+        <meta name="keywords" content="Logistics, Shipping, Freight, Supply Chain Management, Reliable Logistics, Efficient Shipping, Business Logistics Solutions" />
+        <meta name="author" content="Tofar Logistics Agency" />
       </Helmet>
       <SubscribePopUp />
       <HeaderSection />
       <Hero />
+      <ReachDestinationCTA />
       <OurServicesSection />
       <CallToAction />
       <WhoWeAre />

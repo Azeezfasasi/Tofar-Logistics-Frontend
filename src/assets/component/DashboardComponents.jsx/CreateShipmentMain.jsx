@@ -2,20 +2,21 @@ import React, { useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
-import { FaSpinner, FaTimesCircle } from 'react-icons/fa'; // Import icons for loading/error
+// import { FaSpinner, FaTimesCircle } from 'react-icons/fa';
+import { FaSpinner, FaTimesCircle, FaPlus, FaTrash } from 'react-icons/fa'; 
 
 // Assuming API_BASE_URL is correctly defined and imported
 import { API_BASE_URL } from '../../../config/Api'; 
 
 const generateTrackingNumber = () => {
   const rand = Math.floor(10000000000 + Math.random() * 90000000000);
-  return `CAR${rand}`;
+  return `TLA${rand}`;
 };
 
 export default function CreateShipmentForm({ token }) {
   const [form, setForm] = useState({
     trackingNumber: generateTrackingNumber(),
-    sender: '', // This will hold the sender's _id
+    sender: '', 
     senderName: '',
     senderPhone: '',
     senderEmail: '',
@@ -27,6 +28,7 @@ export default function CreateShipmentForm({ token }) {
     origin: '',
     destination: '',
     status: 'pending',
+    items: [], 
     weight: '',
     shipmentDate: '',
     deliveryDate: '',
@@ -34,9 +36,17 @@ export default function CreateShipmentForm({ token }) {
     length: '',
     width: '',
     height: '',
+    breadth: '',
     volume: '',
     cost: '',
+    shipmentPieces: '',
+    shipmentType: '',
+    shipmentPurpose: '',
+    shipmentFacility: '',
   });
+
+  const [newItem, setNewItem] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   // Fetch users for the sender dropdown
   const { 
@@ -70,6 +80,7 @@ export default function CreateShipmentForm({ token }) {
       return res.data;
     },
     onSuccess: () => {
+      setSubmitting(false);
       toast.success('Shipment created successfully');
       setForm((prev) => ({
         ...prev,
@@ -86,6 +97,7 @@ export default function CreateShipmentForm({ token }) {
         origin: '',
         destination: '',
         status: 'pending',
+        items: [],
         weight: '',
         shipmentDate: '',
         deliveryDate: '',
@@ -93,11 +105,17 @@ export default function CreateShipmentForm({ token }) {
         length: '',
         width: '',
         height: '',
+        breadth: '',
         volume: '',
         cost: '',
+        shipmentPieces: '',
+        shipmentType: '',
+        shipmentPurpose: '',
+        shipmentFacility: '',
       }));
     },
     onError: (err) => {
+      setSubmitting(false);
       toast.error(err.response?.data?.message || 'Error creating shipment');
     },
   });
@@ -107,11 +125,30 @@ export default function CreateShipmentForm({ token }) {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleAddItem = (e) => {
+    e.preventDefault();
+    if (newItem.trim() !== '') {
+      setForm(prevForm => ({
+        ...prevForm,
+        items: [...prevForm.items, newItem.trim()]
+      }));
+      setNewItem('');
+    }
+  };
+
+  const handleRemoveItem = (index) => {
+    setForm(prevForm => ({
+      ...prevForm,
+      items: prevForm.items.filter((_, i) => i !== index)
+    }));
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!form.sender) {
       return toast.error('Please select a sender');
     }
+    setSubmitting(true);
     mutation.mutate(form);
   };
 
@@ -277,6 +314,45 @@ export default function CreateShipmentForm({ token }) {
           />
         </div>
 
+        {/* section for adding items */}
+        <div className="md:col-span-2">
+            <label className="block text-sm font-medium mb-1">Items in Shipment <span className='text-[13px] text-blue-800'>Enter an item and click the plus button to add</span></label>
+            <div className="flex items-center space-x-2 mb-2">
+                <input
+                  type="text"
+                  value={newItem}
+                  onChange={(e) => setNewItem(e.target.value)}
+                  placeholder="e.g., 'Food Items, Electronics, Clothing etc.'"
+                  className="flex-grow border border-solid border-blue-600 rounded p-2 focus:outline-none focus:ring focus:ring-blue-600"
+
+                />
+                <button
+                  type="button"
+                  onClick={handleAddItem}
+                  className="p-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition flex items-center justify-center"
+                >
+                  <FaPlus />
+                </button>
+            </div>
+
+            {form.items.length > 0 && (
+                <ul className="border border-solid border-gray-300 rounded p-2">
+                    {form.items.map((item, index) => (
+                        <li key={index} className="flex justify-between items-center py-1">
+                            <span>{item}</span>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveItem(index)}
+                              className="text-red-600 hover:text-red-800 transition"
+                            >
+                              <FaTrash />
+                            </button>
+                        </li>
+                    ))}
+                </ul>
+            )}
+        </div>
+
         <div>
           <label className="block text-sm font-medium mb-1">Weight (kg)</label>
           <input
@@ -314,7 +390,19 @@ export default function CreateShipmentForm({ token }) {
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">Height (Optional)</label>
+          <label className="block text-sm font-medium mb-1">Breadth (cm) (Optional)</label>
+          <input
+            type="number"
+            name="breadth"
+            value={form.breadth}
+            onChange={handleChange}
+            placeholder='Optional:Enter the breadth of the shipment'
+            className="w-full border border-solid border-blue-600 rounded p-2 focus:outline-none focus:ring focus:ring-blue-600"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">Height (cm) - (Optional)</label>
           <input
             type="number"
             name="height"
@@ -338,6 +426,43 @@ export default function CreateShipmentForm({ token }) {
         </div>
 
         <div>
+          <label className="block text-sm font-medium mb-1">Shipment Type</label>
+          <select
+            name="shipmentType" value={form.shipmentType} onChange={handleChange} className="w-full border border-solid border-blue-600 rounded p-2 focus:outline-none focus:ring focus:ring-blue-600">
+            <option value="">Choose Shipment Type</option>
+            <option value="Boxes">Boxes</option>
+            <option value="Padding">Padding</option>
+            <option value="Package">Package</option>
+            <option value="Document">Document</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">Shipment Pieces</label>
+          <textarea
+            name="shipmentPieces"
+            value={form.shipmentPieces}
+            onChange={handleChange}
+            placeholder='Enter the Pieces of the shipment'
+            className="w-full border border-solid border-blue-600 rounded p-2 focus:outline-none focus:ring focus:ring-blue-600"></textarea>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">Shipment Purpose</label>
+          <select
+            name="shipmentPurpose" value={form.shipmentPurpose} onChange={handleChange} className="w-full border border-solid border-blue-600 rounded p-2 focus:outline-none focus:ring focus:ring-blue-600">
+            <option value="">Choose Shipment Purpose</option>
+            <option value="Personal">Personal</option>
+            <option value="Gift">Gift</option>
+            <option value="Commercial">Commercial</option>
+            <option value="Return for Repair">Return for Repair</option>
+            <option value="Sample">Sample</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+
+        <div>
           <label className="block text-sm font-medium mb-1">Shipping Cost (₦) - (Optional)</label>
           <input
             type="text"
@@ -347,48 +472,6 @@ export default function CreateShipmentForm({ token }) {
             placeholder='Optional: Enter the total cost of the shipment'
             className="w-full border border-solid border-blue-600 rounded p-2 focus:outline-none focus:ring focus:ring-blue-600"
           />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-1">Status</label>
-          <select
-            name="status"
-            value={form.status}
-            onChange={handleChange}
-            className="w-full border border-solid border-blue-600 rounded p-2 focus:outline-none focus:ring focus:ring-blue-600"
-          >
-            {[
-              'pending',
-              'in-transit',
-              'delivered',
-              'cancelled',
-              'processing',
-              'pickup-scheduled',
-              'out-for-delivery',
-              'picked-up',
-              'arrived-at-hub',
-              'departed-from-hub',
-              'on-hold',
-              'customs-clearance',
-              'Awaiting Pickup',
-              'failed-delivery-attempt',
-              'Arrived Carrier Connecting facility',
-              'Departed Tofar Logistics facility (Nig)',
-              'Arrived nearest airport',
-              'Shipment is Delayed',
-              'Delivery date not available',
-              'Available for pick up,check phone for instructions',
-              'Processed in Lagos Nigeria',
-              'Pending Carrier lift',
-              'Scheduled to depart on the next movement',
-              'Received from flight',
-              'Package is received and accepted by airline'
-            ].map((status) => (
-              <option key={status} value={status}>
-                {status}
-              </option>
-            ))}
-          </select>
         </div>
 
         <div>
@@ -413,6 +496,28 @@ export default function CreateShipmentForm({ token }) {
           />
         </div>
 
+        <div>
+          <label className="block text-sm font-medium mb-1">Shipment Facility</label>
+          <select
+            name="shipmentFacility" value={form.shipmentFacility} onChange={handleChange} className="w-full border border-solid border-blue-600 rounded p-2 focus:outline-none focus:ring focus:ring-blue-600" required>
+            <option value="">Choose Shipment Facility</option>
+            <option value="Lagos">Lagos</option>
+            <option value="Atlanta">Atlanta</option>
+            <option value="Indianapolis">Indianapolis</option>
+            <option value="New York">New York</option>
+            <option value="New Jersey">New Jersey</option>
+            <option value="Maryland">Maryland</option>
+            <option value="Dallas">Dallas</option>
+            <option value="Houston">Houston</option>
+            <option value="United States of America">United States of America</option>
+            <option value="Canada">Canada</option>
+            <option value="Ontario">Ontario</option>
+            <option value="Calgary">Calgary</option>
+            <option value="Edmonton">Edmonton</option>
+            <option value="United Kingdom">United Kingdom</option>
+          </select>
+        </div>
+
         <div className="md:col-span-2">
           <label className="block text-sm font-medium mb-1">Notes</label>
           <textarea
@@ -425,13 +530,20 @@ export default function CreateShipmentForm({ token }) {
           />
         </div>
 
-        <div className="md:col-span-2 mt-4">
+        <div className="w-full md:w-[40%] md:col-span-2 mt-4 mx-auto">
           <button
             type="submit"
-            disabled={mutation.isLoading}
+            disabled={mutation.isLoading || submitting}
             className="w-full bg-blue-600 text-white font-semibold py-2 rounded hover:bg-blue-700 transition"
           >
-            {mutation.isLoading ? 'Creating Shipment...' : 'Create Shipment'}
+            {(mutation.isLoading || submitting) ? (
+              <div className="flex items-center justify-center gap-2">
+                <FaSpinner className="animate-spin" />
+                <span>Creating Shipment...</span>
+              </div>
+            ) : (
+              <span>Create Shipment</span>
+            )}
           </button>
         </div>
       </form>

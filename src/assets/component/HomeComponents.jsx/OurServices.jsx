@@ -29,9 +29,9 @@ export default function OurServicesSection() {
   ];
 
   return (
-    <section className="bg-gray-900 text-white py-16 px-4 font-sans">
+    <section className="bg-blue-300 text-white py-16 px-4 font-sans">
       <div className="container mx-auto text-center">
-        <h3 className="text-sm uppercase tracking-widest text-gray-400 mb-2">WHAT WE DO</h3>
+        <h3 className="text-sm font-bold uppercase tracking-widest text-gray-800 mb-2">WHAT WE DO</h3>
         <h2 className="text-3xl md:text-4xl font-extrabold mb-12 relative inline-block">
           FEATURED SERVICES
           <span className="block w-24 h-1 bg-blue-600 mx-auto mt-2 rounded-full"></span>

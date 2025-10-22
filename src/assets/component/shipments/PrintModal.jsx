@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import logo2 from '../../images/logo2.png'
+import tofar from '../../images/tofar.png'
 
 export default function PrintModalContent({ shipment, onClose }) {
   const printRef = useRef();
@@ -118,16 +118,16 @@ export default function PrintModalContent({ shipment, onClose }) {
             <>
               <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', marginBottom: '1.25rem' }}>
                 <img
-                  src={logo2}
+                  src={tofar}
                   alt="Logo"
-                  style={{ width: '250px', height: '70px' }}
+                  style={{ width: '130px', height: '130px' }}
                 />
               </div>
               <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                 <div>
                   <p style={{ fontWeight: '600' }}>Tofar Logistics Agency</p>
                   <p>Nacho Export Warehouse, Murital Muhammad International Airport, Ikeja Lagos.</p>
-                  <p>Email: info@cargorealmandlosgistics.com</p>
+                  <p>Email: info@tofarcargo.com</p>
                 </div>
               </div>
               <h3 style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1F2937', borderBottom: '1px solid #E5E7EB', paddingBottom: '0.5rem', marginBottom: '1rem' }}>
@@ -223,10 +223,10 @@ export default function PrintModalContent({ shipment, onClose }) {
         </div>
       </div>
       <div className="flex justify-end gap-2 mt-4">
-        <Button variant="outline" onClick={onClose}>
+        <Button variant="outline" onClick={onClose} className="bg-red-200 hover:bg-red-300 text-gray-800 cursor-pointer">
           Cancel
         </Button>
-        <Button onClick={handleDownloadPDF} disabled={!shipment || isDownloading || isScriptLoading}>
+        <Button onClick={handleDownloadPDF} disabled={!shipment || isDownloading || isScriptLoading} className="bg-green-600 hover:bg-green-700 text-white cursor-pointer">
           {isScriptLoading ? (
             'Loading Libraries...'
           ) : isDownloading ? (

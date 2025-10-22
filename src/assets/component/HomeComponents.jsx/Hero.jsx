@@ -5,6 +5,15 @@ import cargo2 from '../../images/cargo2.jpg';
 
 const slides = [
   {
+    headline: 'Domestics and International Deliveries!',
+    description:
+      'We will take care of your cargo and deliver them safe and on time, no matter the destination.',
+    image: cargo1,
+    alt: 'Global Coverage Image',
+    cta: '/',
+    buttonText: 'Book Appointment',
+  },
+  {
     headline: 'Your Trusted Global Shipment Partner',
     description:
       'Our dedicated team ensures seamless and secure transportation of your cargo across the globe. We are committed to providing efficient, reliable, and stress-free logistics solutions for all your shipping needs.',
@@ -21,15 +30,6 @@ const slides = [
     alt: 'Fast Delivery Image',
     cta: '/app/trackshipment',
     buttonText: 'Request Quote',
-  },
-  {
-    headline: 'Global Coverage, Local Expertise',
-    description:
-      'We connect continents and cities, offering tailored solutions for every shipment. Trust us for your international logistics needs.',
-    image: cargo1,
-    alt: 'Global Coverage Image',
-    cta: '/',
-    buttonText: 'Book Appointment',
   },
 ];
 

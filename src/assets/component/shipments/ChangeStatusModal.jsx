@@ -65,10 +65,10 @@ export default function ChangeStatusModal({ shipment, onClose, onStatusChange })
         </SelectContent>
       </Select>
       <div className="flex justify-end gap-2 pt-4">
-        <Button variant="outline" onClick={onClose}>
+        <Button variant="outline" onClick={onClose} className="cursor-pointer bg-red-200 hover:bg-red-300">
           Cancel
         </Button>
-        <Button onClick={handleChangeStatus} disabled={!status}>
+        <Button onClick={handleChangeStatus} disabled={!status} className="cursor-pointer bg-green-600 hover:bg-green-700 text-white">
           Update Status
         </Button>
       </div>
