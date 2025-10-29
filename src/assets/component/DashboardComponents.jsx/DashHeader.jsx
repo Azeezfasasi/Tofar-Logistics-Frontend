@@ -56,7 +56,6 @@ function DashHeader() {
     '/app/account/addnewuser': { key: '9-2', parent: '9' },
     '/app/account/changeuserpassword': { key: '9-3', parent: '9' },
     '/app/account/profile': { key: '10', parent: null },
-    '/app/mysettings': { key: '11', parent: null },
   };
   
   // Normalize pathname to handle trailing slashes and query params
@@ -169,6 +168,9 @@ function DashHeader() {
                   )}
                   {(isAdmin || isAgent || isEmployee) && (
                   <Nav.Item eventKey="2-3" as={Link} to="/app/account/createshipment">Create Shipment</Nav.Item>
+                  )}
+                  {(isAdmin || isAgent || isEmployee) && (
+                  <Nav.Item eventKey="2-4" as={Link} to="/app/account/archived-shipments">Archived Shipments</Nav.Item>
                   )}
                   {(isAdmin || isAgent || isClient || isEmployee) && (
                   <Nav.Item eventKey="2-4" as={Link} to="/app/trackshipment">Track Shipment</Nav.Item>
