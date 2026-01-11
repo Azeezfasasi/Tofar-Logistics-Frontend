@@ -2,55 +2,36 @@ import React, { useState, useEffect } from 'react';
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 
-const statusOptions = [
-  'pending',
-  'processing',
-  'in-transit',
-  'arrived-at-hub',
-  'departed-from-hub',
-  'out-for-delivery',
-  'delivered',
-  'failed-delivery-attempt',
-  'cancelled',
-  'pickup-scheduled',
-  'picked-up',
-  'on-hold',
-  'customs-clearance',
-  'Awaiting Pickup',
-  'Awaiting Delivery',
-  'Arrived Carrier Connecting facility',
-  'Departed CARGO realm facility (Nig)',
-  'Arrived nearest airport', 'Shipment is Delayed',
-  'Delivery date not available',
-  'Available for pick up,check phone for instructions',
-  'Processed in Lagos Nigeria', 'Pending Carrier lift',
-  'Scheduled to depart on the next movement',
-  'Received from flight',
-  'Package is received and accepted by airline',
-  'Customs clearance completed',
-  'Delivery is booked',
-  'Arrived at an international sorting facility and will be ready for delivery soon'
-];
-
-export default function ChangeStatusModal({ shipment, onClose, onStatusChange }) {
+export default function ChangeStatusModal({ shipment, onClose, onStatusChange, statuses = [] }) {
   const [status, setStatus] = useState('');
   const [location, setLocation] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     if (shipment) {
       setStatus(shipment.status || '');
       setLocation('');
+      setError('');
     }
   }, [shipment]);
 
-  const handleChangeStatus = () => {
+  const handleChangeStatus = async () => {
     if (!status) return;
-    onStatusChange({ 
-      shipmentId: shipment._id, 
-      newStatus: status,
-      location: location.trim() || undefined
-    });
-    onClose();
+    setLoading(true);
+    setError('');
+    
+    try {
+      await onStatusChange({ 
+        shipmentId: shipment._id, 
+        newStatus: status,
+        location: location.trim() || undefined
+      });
+      onClose();
+    } catch (err) {
+      setError(err.message || 'Failed to update status. Please try again.');
+      setLoading(false);
+    }
   };
 
   return (
@@ -63,17 +44,20 @@ export default function ChangeStatusModal({ shipment, onClose, onStatusChange })
       {/* Status Selector */}
       <div className="space-y-2">
         <label className="text-sm font-medium text-gray-700">New Status</label>
-        <Select value={status} onValueChange={setStatus}>
+        <Select value={status} onValueChange={setStatus} disabled={loading}>
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Select status" />
           </SelectTrigger>
           <SelectContent>
             <div className='bg-blue-50'>
-              {statusOptions.map((option) => (
-              <SelectItem key={option} value={option}>
-                <div className='capitalize'>{option.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</div>
-              </SelectItem>
-            ))}
+              {statuses.map((status) => {
+                const statusName = status.name || status;
+                return (
+                  <SelectItem key={statusName} value={statusName}>
+                    <div className='capitalize'>{statusName}</div>
+                  </SelectItem>
+                );
+              })}
             </div>
           </SelectContent>
         </Select>
@@ -92,7 +76,8 @@ export default function ChangeStatusModal({ shipment, onClose, onStatusChange })
             value={location}
             onChange={(e) => setLocation(e.target.value)}
             placeholder="e.g., Indianapolis - Indiana - USA"
-            className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+            disabled={loading}
+            className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
           />
         </div>
         <p className="text-xs text-gray-500">
@@ -100,16 +85,22 @@ export default function ChangeStatusModal({ shipment, onClose, onStatusChange })
         </p>
       </div>
 
+      {error && (
+        <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+          <p className="text-sm text-red-600">{error}</p>
+        </div>
+      )}
+
       <div className="flex justify-end gap-2 pt-4 border-t border-gray-200">
-        <Button variant="outline" onClick={onClose}>
+        <Button variant="outline" onClick={onClose} disabled={loading}>
           Cancel
         </Button>
         <Button 
           onClick={handleChangeStatus} 
-          disabled={!status}
+          disabled={!status || loading}
           className="bg-blue-600 text-white hover:bg-blue-700"
         >
-          Update Status & Location
+          {loading ? 'Updating...' : 'Update Status & Location'}
         </Button>
       </div>
     </div>
