@@ -126,41 +126,242 @@ export default function TrackShipmentComponent() {
         )}
         
         {trackingResult && (
-          <div className="bg-white px-6 py-6 md:px-8 md:py-8 rounded-lg border border-solid border-blue-400 shadow-xl max-w-3xl mx-auto text-left">
-            <h3 className="text-2xl font-bold text-gray-900 mb-4">
-              Shipment Status: <br className='md:hidden' /> <span className={`font-extrabold capitalize ${trackingResult.status === 'Delivered' ? 'text-blue-600' : 'text-blue-600'}`}>{trackingResult.status}</span></h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700 mb-6">
-              <p><strong>Sender Name:</strong> {trackingResult.senderName}</p>
-              <p><strong>Receiver Name:</strong> {trackingResult.recipientName}</p>
-              <p><strong>Shipment Items:</strong> {trackingResult.items.join(', ')}</p>
-              <p><strong>Shipment Pieces:</strong> {trackingResult.shipmentPieces}</p>
-              <p><strong>Shipment Type:</strong> {trackingResult.shipmentType}</p>
-              <p><strong>Shipment Purpose:</strong> {trackingResult.shipmentPurpose}</p>
-              <p><strong>Origin Country:</strong> {trackingResult.origin}</p>
-              <p><strong>Destination Country:</strong> {trackingResult.destination}</p>
-              <p><strong>Shipment Date:</strong> {formatDate(trackingResult.shipmentDate)}</p>
-              <p><strong>Estimated Delivery:</strong> {formatDate(trackingResult.deliveryDate)}</p>
+          <div className="max-w-4xl mx-auto mt-12 mb-8">
+            {/* Status Card Header */}
+            <div className={`rounded-t-2xl p-6 md:p-8 text-white shadow-lg ${
+              trackingResult.status?.toLowerCase() === 'delivered' 
+                ? 'bg-gradient-to-r from-blue-500 to-blue-600' 
+                : 'bg-gradient-to-r from-amber-500 to-amber-600'
+            }`}>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-semibold uppercase tracking-wide opacity-90 mb-2">Current Status</p>
+                  <h3 className="text-3xl md:text-4xl font-bold capitalize">
+                    {trackingResult.status}
+                  </h3>
+                </div>
+                <div className="text-right">
+                  {trackingResult.status === 'Delivered' ? (
+                    <svg className="w-16 h-16 text-white opacity-80" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                  ) : (
+                    <svg className="w-16 h-16 text-white opacity-80 animate-pulse" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M5 2a1 1 0 011-1h8a1 1 0 011 1v1h1a2 2 0 012 2v2h1a1 1 0 110 2h-1v6h1a1 1 0 110 2h-1v2a2 2 0 01-2 2h-1v1a1 1 0 11-2 0v-1H8v1a1 1 0 11-2 0v-1H5a2 2 0 01-2-2v-2H2a1 1 0 110-2h1V9H2a1 1 0 010-2h1V5a2 2 0 012-2h1V2zm10 10H5V5h10v7z" clipRule="evenodd" />
+                    </svg>
+                  )}
+                </div>
+              </div>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <span className="inline-block bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm font-medium">
+                  Tracking: {trackingResult.trackingNumber}
+                </span>
+              </div>
+            </div>
+
+            {/* Main Details Card */}
+            <div className="bg-white shadow-lg rounded-b-2xl p-6 md:p-8 border border-gray-100">
+              {/* Shipment Parties Section */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8 pb-8 border-b border-gray-200">
+                {/* Sender Info */}
+                <div className="flex gap-4">
+                  <div className="flex-shrink-0">
+                    <div className="flex items-center justify-center h-12 w-12 rounded-lg bg-blue-100">
+                      <svg className="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-gray-600 uppercase tracking-wide">From</p>
+                    <p className="text-xl font-bold text-gray-900 mt-1">{trackingResult.senderName}</p>
+                    <p className="text-sm text-gray-600 mt-1">{trackingResult.origin}</p>
+                  </div>
+                </div>
+
+                {/* Receiver Info */}
+                <div className="flex gap-4">
+                  <div className="flex-shrink-0">
+                    <div className="flex items-center justify-center h-12 w-12 rounded-lg bg-blue-100">
+                      <svg className="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.673 7.083A7.001 7.001 0 003 12a6.999 6.999 0 0014.673-4.917M16.5 11a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0z" />
+                      </svg>
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-gray-600 uppercase tracking-wide">To</p>
+                    <p className="text-xl font-bold text-gray-900 mt-1">{trackingResult.recipientName || 'TBD'}</p>
+                    <p className="text-sm text-gray-600 mt-1">{trackingResult.destination}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Shipment Details Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                {/* Items */}
+                <div className="bg-blue-100 rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <svg className="h-5 w-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m0 0v10l8 4" />
+                    </svg>
+                    <p className="text-sm font-semibold text-gray-600 uppercase">Items</p>
+                  </div>
+                  <p className="text-gray-900 font-medium">{trackingResult.items.join(', ')}</p>
+                </div>
+
+                {/* Pieces */}
+                <div className="bg-blue-100 rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <svg className="h-5 w-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3v-6" />
+                    </svg>
+                    <p className="text-sm font-semibold text-gray-600 uppercase">Pieces</p>
+                  </div>
+                  <p className="text-gray-900 font-medium">{trackingResult.shipmentPieces || 'N/A'}</p>
+                </div>
+
+                {/* Type */}
+                <div className="bg-blue-100 rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <svg className="h-5 w-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16V6m0 0L7 12m6-6l6 6" />
+                    </svg>
+                    <p className="text-sm font-semibold text-gray-600 uppercase">Type</p>
+                  </div>
+                  <p className="text-gray-900 font-medium">{trackingResult.shipmentType}</p>
+                </div>
+
+                {/* Purpose */}
+                <div className="bg-blue-100 rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <svg className="h-5 w-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1 4h1m-6-4h.01M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <p className="text-sm font-semibold text-gray-600 uppercase">Purpose</p>
+                  </div>
+                  <p className="text-gray-900 font-medium">{trackingResult.shipmentPurpose}</p>
+                </div>
+              </div>
+
+              {/* Dates Section */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-gray-200">
+                <div>
+                  <p className="text-sm font-semibold text-gray-600 uppercase mb-2">Shipment Date</p>
+                  <div className="flex justify-center items-center gap-2">
+                    <svg className="h-5 w-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v2h16V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h12a1 1 0 100-2H6z" clipRule="evenodd" />
+                    </svg>
+                    <p className="text-gray-900 font-medium">{formatDate(trackingResult.shipmentDate)}</p>
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-sm font-semibold text-gray-600 uppercase mb-2">Estimated Delivery</p>
+                  <div className="flex justify-center items-center gap-2">
+                    <svg className="h-5 w-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v2h16V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h12a1 1 0 100-2H6z" clipRule="evenodd" />
+                    </svg>
+                    <p className="text-gray-900 font-medium">{formatDate(trackingResult.deliveryDate) || 'TBD'}</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         )}
 
         {/* Shipment Tracking history */}
         {sortedHistory && (
-          <div className="max-w-[500px] mx-auto p-4 sm:p-6 bg-white rounded-lg shadow-md font-sans mt-3 border border-solid border-blue-400">
-            <h2 className="text-[18px] sm:text-[18px] font-bold text-blue-700 mb-6">Shipment Tracking History for #{trackingResult.trackingNumber}</h2>
-            <div className="relative border-l-2 border-gray-200 ml-2">
-              {sortedHistory.map((event, index) => (
-                <div key={index} className="mb-8 ml-6 relative">
-                  {/* The dot */}
-                  <div className={`absolute -left-8 top-1.5 w-4 h-4 rounded-full border-2 ${index === 0 ? 'bg-blue-600 border-blue-600' : 'bg-blue-400 border-gray-400'}`}></div>
-                  
-                  <div className="flex flex-col">
-                    <h4 className="font-semibold text-gray-900 leading-tight mb-1 capitalize">{event.status}</h4>
-                    <p className="text-sm text-gray-600 mb-1">{event.location}</p>
-                    <p className="text-xs text-gray-400">{new Date(event.timestamp).toLocaleString()}</p>
+          <div className="max-w-2xl mx-auto p-4 sm:p-6 bg-white rounded-lg shadow-md font-sans mt-6 border border-solid border-blue-400">
+            <h2 className="text-xl sm:text-2xl font-bold text-blue-700 mb-6 flex items-center gap-2">
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path>
+                <path fillRule="evenodd" d="M4 5a2 2 0 012-2 1 1 0 100-2A4 4 0 000 5v10a4 4 0 004 4h12a4 4 0 004-4V5a4 4 0 00-4-4 1 1 0 100 2 2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V5z"></path>
+              </svg>
+              Tracking History for #{trackingResult.trackingNumber}
+            </h2>
+            
+            <div className="relative">
+              {/* Vertical line */}
+              <div className="absolute left-6 top-8 bottom-0 w-1 bg-gradient-to-b from-blue-400 to-gray-300"></div>
+              
+              {/* Timeline events */}
+              <div className="space-y-6">
+                {sortedHistory.map((event, index) => (
+                  <div key={index} className="relative pl-20">
+                    {/* Timeline dot */}
+                    <div className={`absolute left-0 top-2 w-12 h-12 rounded-full flex items-center justify-center border-4 transition-all ${
+                      index === 0 
+                        ? 'bg-blue-500 border-blue-600 shadow-lg scale-110' 
+                        : 'bg-amber-500 border-amber-600 hover:scale-110'
+                    }`}>
+                      <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        {index === 0 ? (
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"></path>
+                        ) : (
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16z"></path>
+                        )}
+                      </svg>
+                    </div>
+                    
+                    {/* Event content */}
+                    <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 hover:shadow-md transition-shadow">
+                      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-2">
+                        <div className="flex flex-col items-center flex-1">
+                          <h4 className="font-bold text-gray-900 leading-tight capitalize text-lg mb-2">
+                            {event.status}
+                          </h4>
+                          {event.location && (
+                            <div className="flex items-center gap-2 mb-2">
+                              <svg className="w-4 h-4 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"></path>
+                              </svg>
+                              <p className="text-sm text-gray-700 font-medium">{event.location}</p>
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex-shrink-0">
+                          <p className="text-xs text-gray-500 whitespace-nowrap">
+                            {new Date(event.timestamp).toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                              year: 'numeric'
+                            })}
+                          </p>
+                          <p className="text-xs text-gray-500 whitespace-nowrap font-medium">
+                            {new Date(event.timestamp).toLocaleTimeString('en-US', {
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
                   </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Legend */}
+            <div className="mt-8 pt-6 border-t border-gray-200">
+              <p className="text-sm text-gray-600 mb-3 font-medium">Legend:</p>
+              <div className="flex flex-wrap justify-center gap-6">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-blue-500 border-2 border-blue-600 flex items-center justify-center">
+                    <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"></path>
+                    </svg>
+                  </div>
+                  <span className="text-sm text-gray-700">Latest Update</span>
                 </div>
-              ))}
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-amber-500 border-2 border-amber-600 flex items-center justify-center">
+                    <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16z"></path>
+                    </svg>
+                  </div>
+                  <span className="text-sm text-gray-700">Previous Updates</span>
+                </div>
+              </div>
             </div>
           </div>
         )}

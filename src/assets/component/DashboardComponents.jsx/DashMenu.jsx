@@ -27,6 +27,8 @@ function DashMenu() {
     '/app/account/createshipment': { key: '2-3', parent: '2' },
     '/app/account/archived-shipments': { key: '2-4', parent: '2' },
     '/app/trackshipment': { key: '2-5', parent: '2' },
+    '/app/account/manage-facilities': { key: '2-6', parent: '2' },
+    '/app/account/manage-shipment-statuses': { key: '2-7', parent: '2' },
     '/app/account/contactformresponses': { key: '3', parent: null },
     '/app/account/allposts': { key: '4-1', parent: '4' },
     '/app/account/allblogpost': { key: '4-2', parent: '4' },
@@ -45,7 +47,7 @@ function DashMenu() {
     '/app/account/addnewuser': { key: '9-2', parent: '9' },
     '/app/account/changeuserpassword': { key: '9-3', parent: '9' },
     '/app/account/profile': { key: '10', parent: null },
-    '/app/mysettings': { key: '11', parent: null },
+    '/app/account/manage-messageslides': { key: '11-1', parent: '11' },
   };
     // Normalize pathname to handle trailing slashes and query params
     const cleanPath = location.pathname.replace(/\/$/, '').split('?')[0];
@@ -88,6 +90,12 @@ function DashMenu() {
                         )}
                         {(isAdmin || isAgent || isClient || isEmployee) && (
                         <Nav.Item eventKey="2-5" as={Link} to="/app/trackshipment">Track Shipment</Nav.Item>
+                        )}
+                        {(isAdmin || isEmployee) && (
+                        <Nav.Item eventKey="2-6" as={Link} to="/app/account/manage-facilities">Manage Facilities</Nav.Item>
+                        )}
+                        {(isAdmin || isEmployee) && (
+                        <Nav.Item eventKey="2-7" as={Link} to="/app/account/manage-shipment-statuses">Manage Shipment Statuses</Nav.Item>
                         )}
                     </Nav.Menu>
                     )}
@@ -146,6 +154,11 @@ function DashMenu() {
                     <Nav.Item eventKey="10" icon={<UserInfoIcon />} as={Link} to="/app/account/profile">
                         Profile
                     </Nav.Item>
+                    )}
+                    {(isAdmin) && (
+                    <Nav.Menu eventKey="11" title="Manage Messages Slides" icon={<GearIcon />}>
+                        <Nav.Item eventKey="11-1" as={Link} to="/app/account/manage-messageslides">Messages Slides</Nav.Item>
+                    </Nav.Menu>
                     )}
                     {(isAdmin || isAgent || isEmployee || isClient) && (
                     <Nav.Item icon={<OffRoundIcon />}>
