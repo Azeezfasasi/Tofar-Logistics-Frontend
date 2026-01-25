@@ -211,6 +211,24 @@ export default function AllShipmentsMain({ token }) {
             throw new Error(err?.response?.data?.message || 'Failed to update status. Please try again.');
         }
     };
+
+    const handleRegenerateQRCode = async (shipmentId) => {
+        try {
+            const authToken = token || localStorage.getItem('token');
+            const res = await axios.post(`${API_BASE_URL}/shipments/${shipmentId}/regenerate-qr`, {}, {
+                headers: {
+                    Authorization: `Bearer ${authToken}`,
+                },
+            });
+            console.log("QR code regenerated successfully:", res.data);
+            alert('QR code regenerated successfully!');
+            fetchShipments(); // Refresh data
+            closeModal();
+        } catch (err) {
+            console.error("Failed to regenerate QR code:", err);
+            alert(`Error: ${err.response?.data?.message || err.message}`);
+        }
+    };
     
     if (loading) { 
         return (
@@ -316,6 +334,48 @@ export default function AllShipmentsMain({ token }) {
         {selectedShipment && (
         <BasicModal isOpen={modalType === 'print'} onClose={closeModal}>
             <PrintModal shipment={selectedShipment} onClose={closeModal} />
+        </BasicModal>
+        )}
+
+        {selectedShipment && (
+        <BasicModal isOpen={modalType === 'qr'} onClose={closeModal}>
+            <div className="bg-white rounded-lg p-6 max-w-md w-full">
+                <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-xl font-bold text-gray-900">QR Code</h3>
+                    <button
+                        onClick={closeModal}
+                        className="text-gray-500 hover:text-gray-700 text-2xl"
+                    >
+                        ×
+                    </button>
+                </div>
+                
+                <div className="mb-4">
+                    <p className="text-sm text-gray-600 mb-2">Tracking Number: <strong>{selectedShipment.trackingNumber}</strong></p>
+                    {selectedShipment.qrCodeUrl && (
+                        <div className="flex justify-center mb-4">
+                            <img src={selectedShipment.qrCodeUrl} alt="QR Code" className="w-48 h-48 border border-gray-300 rounded" />
+                        </div>
+                    )}
+                </div>
+
+                <button
+                    onClick={() => handleRegenerateQRCode(selectedShipment._id)}
+                    className="w-full px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition mb-2"
+                >
+                    Regenerate QR Code
+                </button>
+
+                {selectedShipment.qrCodeUrl && (
+                    <a
+                        href={selectedShipment.qrCodeUrl}
+                        download={`QR-${selectedShipment.trackingNumber}.png`}
+                        className="w-full block text-center px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+                    >
+                        Download QR Code
+                    </a>
+                )}
+            </div>
         </BasicModal>
         )}
     </div>

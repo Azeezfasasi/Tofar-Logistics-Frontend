@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Pencil, Download, Mail, Eye, Trash2, FileText, Printer, Truck, RefreshCcw } from 'lucide-react';
+import { Pencil, Download, Mail, Eye, Trash2, FileText, Printer, Truck, RefreshCcw, QrCode } from 'lucide-react';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -83,6 +83,9 @@ export default function ShipmentTable({ shipments, onActionClick }) {
               <td className="p-3">{shipment.shipmentFacility}</td>
               <td className="p-3">{new Date(shipment.createdAt).toLocaleDateString()}</td>
               <td className="p-3 space-x-1">
+                <Button size="icon" variant="ghost" onClick={() => onActionClick(shipment, 'qr')} className='cursor-pointer hover:bg-indigo-100'>
+                  <QrCode size={16} />
+                </Button>
                 <Button size="icon" variant="ghost" onClick={() => onActionClick(shipment, 'print')} className='cursor-pointer hover:bg-purple-100'>
                   <Eye size={16} />
                 </Button>
