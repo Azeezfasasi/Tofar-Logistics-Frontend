@@ -43,11 +43,112 @@ export default function PrintModalContent({ shipment, onClose }) {
     setIsDownloading(true);
 
     try {
-      // Capture the entire content as a single canvas
-      const canvas = await window.html2canvas(printRef.current, {
+      // Create a style element that will override oklch colors
+      const styleOverride = document.createElement('style');
+      styleOverride.textContent = `
+        * {
+          color: #000000 !important;
+          background-color: transparent !important;
+          border-color: #cccccc !important;
+        }
+        button, a, [role="button"] {
+          color: #0066cc !important;
+        }
+      `;
+      document.head.appendChild(styleOverride);
+
+      // Clone the element
+      const clonedElement = printRef.current.cloneNode(true);
+      
+      // Create a temporary container
+      const tempContainer = document.createElement('div');
+      tempContainer.style.position = 'absolute';
+      tempContainer.style.left = '-9999px';
+      tempContainer.style.top = '-9999px';
+      tempContainer.style.width = '1000px';
+      document.body.appendChild(tempContainer);
+      tempContainer.appendChild(clonedElement);
+
+      // Strip all classes and IDs to prevent CSS rules from applying
+      const stripElement = (el) => {
+        el.removeAttribute('class');
+        el.removeAttribute('id');
+        el.removeAttribute('style');
+        
+        // Process children
+        Array.from(el.children).forEach(child => stripElement(child));
+      };
+
+      // Don't strip the root element - just its attributes
+      const allElements = clonedElement.querySelectorAll('*');
+      allElements.forEach(el => {
+        // Preserve inline styles but remove dangerous attributes
+        el.removeAttribute('class');
+        el.removeAttribute('id');
+      });
+
+      // Apply safe basic styles via inline to replace what was removed
+      const applyBasicStyles = (el) => {
+        const computedStyle = window.getComputedStyle(el);
+        
+        // Only apply safe color values
+        el.style.backgroundColor = '#ffffff';
+        el.style.color = '#000000';
+        el.style.borderColor = '#cccccc';
+        
+        // Copy safe layout properties
+        const safeProps = {
+          display: computedStyle.display,
+          padding: computedStyle.padding,
+          margin: computedStyle.margin,
+          textAlign: computedStyle.textAlign,
+          fontSize: computedStyle.fontSize,
+          fontWeight: computedStyle.fontWeight,
+          border: computedStyle.border,
+        };
+
+        Object.entries(safeProps).forEach(([prop, value]) => {
+          if (value && value !== 'normal' && value !== '0px' && !value.includes('oklch')) {
+            el.style[prop] = value;
+          }
+        });
+
+        Array.from(el.children).forEach(child => applyBasicStyles(child));
+      };
+
+      applyBasicStyles(clonedElement);
+
+      // Disable all stylesheets temporarily
+      const disabledSheets = [];
+      Array.from(document.styleSheets).forEach(sheet => {
+        try {
+          if (sheet.disabled === false) {
+            disabledSheets.push(sheet);
+            sheet.disabled = true;
+          }
+        } catch (e) {
+          // Some stylesheets can't be disabled due to CORS
+        }
+      });
+
+      // Capture the element
+      const canvas = await window.html2canvas(clonedElement, {
         scale: 2,
         useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff',
+        allowTaint: true,
+        removeContainer: false,
       });
+
+      // Re-enable stylesheets
+      disabledSheets.forEach(sheet => {
+        sheet.disabled = false;
+      });
+
+      // Remove temporary container and style override
+      document.body.removeChild(tempContainer);
+      document.head.removeChild(styleOverride);
 
       const imgData = canvas.toDataURL('image/png');
       const pdf = new window.jspdf.jsPDF('p', 'mm', 'a4');
@@ -58,10 +159,8 @@ export default function PrintModalContent({ shipment, onClose }) {
 
       // Check if content fits on a single page
       if (pdfHeight < pdf.internal.pageSize.getHeight()) {
-        // If content fits, add as a single image
         pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
       } else {
-        // If content is longer than one page, split into multiple pages
         let heightLeft = pdfHeight;
         let position = 0;
         const pageHeight = pdf.internal.pageSize.getHeight();
@@ -81,32 +180,78 @@ export default function PrintModalContent({ shipment, onClose }) {
 
     } catch (error) {
       console.error("Failed to generate PDF:", error);
+      alert('Failed to generate PDF. Please try again.');
     } finally {
       setIsDownloading(false);
     }
   };
 
-  // Helper function to get color styles based on status, using standard hex codes
+  // Helper function to get color styles based on status
   const getStatusColors = (status) => {
     switch (status) {
-      case 'delivered': return { backgroundColor: '#D1FAE5', color: '#166534' };
-      case 'in-transit': return { backgroundColor: '#FEFCE8', color: '#92400E' };
-      case 'cancelled': return { backgroundColor: '#FEE2E2', color: '#991B1B' };
-      case 'processing': return { backgroundColor: '#DBEAFE', color: '#1E40AF' };
-      case 'pickup-scheduled': return { backgroundColor: '#FFFBEB', color: '#975A16' };
-      case 'out-for-delivery': return { backgroundColor: '#FCE7F3', color: '#9D174D' };
-      case 'picked-up': return { backgroundColor: '#F3E8FF', color: '#6B21A8' };
-      case 'arrived-at-hub': return { backgroundColor: '#F5F3FF', color: '#4C1D95' };
-      case 'departed-from-hub': return { backgroundColor: '#E0E7FF', color: '#3730A3' };
-      case 'on-hold': return { backgroundColor: '#FCE7F3', color: '#9D174D' };
-      case 'customs-clearance': return { backgroundColor: '#CFFAFE', color: '#083344' };
-      case 'Awaiting Pickup': return { backgroundColor: '#FDF2F8', color: '#86198F' };
-      case 'failed-delivery-attempt': return { backgroundColor: '#FEE2E2', color: '#991B1B' };
-      case 'Awaiting Delivery': return { backgroundColor: '#F7FEE7', color: '#3F6212' };
-      case 'pending': return { backgroundColor: '#FEE2E2', color: '#991B1B' };
-      default: return { backgroundColor: '#F3F4F6', color: '#1F2937' };
+      case 'delivered': 
+        return { backgroundColor: '#D1FAE5', color: '#065F46' }; // Green
+      case 'in-transit': 
+        return { backgroundColor: '#FEF9C3', color: '#854D0E' }; // Amber
+      case 'cancelled': 
+        return { backgroundColor: '#FECACA', color: '#991B1B' }; // Red
+      case 'processing': 
+        return { backgroundColor: '#DBEAFE', color: '#1E3A8A' }; // Blue
+      case 'pickup-scheduled': 
+        return { backgroundColor: '#FFF7ED', color: '#9A3412' }; // Orange
+      case 'out-for-delivery': 
+        return { backgroundColor: '#FCE7F3', color: '#9D174D' }; // Pink
+      case 'picked-up': 
+        return { backgroundColor: '#F3E8FF', color: '#6B21A8' }; // Purple
+      case 'arrived-at-hub': 
+        return { backgroundColor: '#EDE9FE', color: '#5B21B6' }; // Indigo
+      case 'departed-from-hub': 
+        return { backgroundColor: '#E0F2FE', color: '#0369A1' }; // Sky Blue
+      case 'on-hold': 
+        return { backgroundColor: '#FEF2F2', color: '#B91C1C' }; // Strong Red
+      case 'customs-clearance': 
+        return { backgroundColor: '#CCFBF1', color: '#0F766E' }; // Teal
+      case 'Awaiting Pickup': 
+        return { backgroundColor: '#FAE8FF', color: '#86198F' }; // Fuchsia
+      case 'failed-delivery-attempt': 
+        return { backgroundColor: '#FFE4E6', color: '#9F1239' }; // Rose
+      case 'Awaiting Delivery': 
+        return { backgroundColor: '#ECFCCB', color: '#3F6212' }; // Lime
+      case 'Arrived Carrier Connecting facility': 
+        return { backgroundColor: '#FEF9C3', color: '#713F12' }; // Yellow
+      case 'Departed CARGO realm facility (Nig)': 
+        return { backgroundColor: '#FFEDD5', color: '#9A3412' }; // Orange
+      case 'Arrived nearest airport': 
+        return { backgroundColor: '#E0F2FE', color: '#075985' }; // Sky
+      case 'Shipment is Delayed': 
+        return { backgroundColor: '#FFE4E6', color: '#9F1239' }; // Rose
+      case 'Delivery date not available': 
+        return { backgroundColor: '#F3F4F6', color: '#1F2937' }; // Neutral Gray
+      case 'Available for pick up,check phone for instructions': 
+        return { backgroundColor: '#DCFCE7', color: '#166534' }; // Strong Green
+      case 'Processed in Lagos Nigeria': 
+        return { backgroundColor: '#FDE68A', color: '#92400E' }; // Amber
+      case 'Pending Carrier lift': 
+        return { backgroundColor: '#E0E7FF', color: '#3730A3' }; // Indigo Blue
+      case 'Scheduled to depart on the next movement': 
+        return { backgroundColor: '#FBCFE8', color: '#9D174D' }; // Pink
+      case 'Received from flight': 
+        return { backgroundColor: '#E0F7FA', color: '#006064' }; // Cyan
+      case 'Package is received and accepted by airline': 
+        return { backgroundColor: '#D1FAE5', color: '#065F46' }; // Deep Green
+      case 'Customs clearance completed': 
+        return { backgroundColor: '#BBF7D0', color: '#15803D' }; // Bright Green
+      case 'Delivery is booked': 
+        return { backgroundColor: '#E0E7FF', color: '#4338CA' }; // Blue Indigo
+      case 'Arrived at an international sorting facility and will be ready for delivery soon': 
+        return { backgroundColor: '#C7D2FE', color: '#1E3A8A' }; // Cool Indigo
+      case 'pending': 
+        return { backgroundColor: '#FEF2F2', color: '#B91C1C' }; // Red Neutral
+      default: 
+        return { backgroundColor: '#F3F4F6', color: '#1F2937' }; // Neutral Gray
     }
   };
+
 
   return (
     <>
@@ -120,18 +265,28 @@ export default function PrintModalContent({ shipment, onClose }) {
                 <img
                   src={tofar}
                   alt="Logo"
-                  style={{ width: '130px', height: '130px' }}
+                  style={{ width: '200px', height: '170px' }}
                 />
               </div>
               <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                 <div>
                   <p style={{ fontWeight: '600' }}>Tofar Logistics Agency</p>
-                  <p>Nacho Export Warehouse, Murital Muhammad International Airport, Ikeja Lagos.</p>
-                  <p>Email: info@tofarcargo.com</p>
+                  <p>Nacho Export Warehouse, Murital Muhammad International Airport, <br /> Ikeja Lagos.</p>
+                  <p>Email: <br /> info@tofarcargo.com</p>
                 </div>
+                {shipment.qrCodeUrl && (
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <img
+                      src={shipment.qrCodeUrl}
+                      alt="Shipment QR Code"
+                      style={{ width: '150px', height: '150px' }}
+                    />
+                    <p style={{ fontSize: '0.75rem', color: '#6B7280', marginTop: '0.5rem', textAlign: 'center' }}>Scan to track shipment</p>
+                  </div>
+                )}
               </div>
               <h3 style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1F2937', borderBottom: '1px solid #E5E7EB', paddingBottom: '0.5rem', marginBottom: '1rem' }}>
-                Shipment Details - <span style={{ color: '#22C55E' }}>{shipment.trackingNumber}</span>
+                Shipment Details - <span style={{ color: '#3053e0' }}>{shipment.trackingNumber}</span>
               </h3>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', columnGap: '3rem', rowGap: '1rem', color: '#4B5563' }}>
                 {/* Shipment details */}
@@ -186,6 +341,18 @@ export default function PrintModalContent({ shipment, onClose }) {
                   <span style={{ fontWeight: '500' }}>{shipment.destination}</span>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <span style={{ fontSize: '0.875rem', fontWeight: '600', color: '#6B7280', textTransform: 'uppercase' }}>Shipment Pieces</span>
+                  <span style={{ fontWeight: '500' }}>{shipment.shipmentPieces}</span>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <span style={{ fontSize: '0.875rem', fontWeight: '600', color: '#6B7280', textTransform: 'uppercase' }}>Shipment Type</span>
+                  <span style={{ fontWeight: '500' }}>{shipment.shipmentType}</span>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <span style={{ fontSize: '0.875rem', fontWeight: '600', color: '#6B7280', textTransform: 'uppercase' }}>Shipment Purpose</span>
+                  <span style={{ fontWeight: '500' }}>{shipment.shipmentPurpose}</span>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
                   <span style={{ fontSize: '0.875rem', fontWeight: '600', color: '#6B7280', textTransform: 'uppercase' }}>Weight</span>
                   <span style={{ fontWeight: '500' }}>{shipment.weight}</span>
                 </div>
@@ -213,6 +380,25 @@ export default function PrintModalContent({ shipment, onClose }) {
                   <span style={{ fontSize: '0.875rem', fontWeight: '600', color: '#6B7280', textTransform: 'uppercase' }}>Description</span>
                   <span style={{ fontWeight: '500' }}>{shipment.notes}</span>
                 </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gridColumn: 'span 2' }}>
+                  <span style={{ fontSize: '0.875rem', fontWeight: '600', color: '#6B7280', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Shipment Items</span>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem', border: '1px solid #E5E7EB', borderRadius: '4px' }}>
+                    <thead>
+                      <tr style={{ backgroundColor: '#3053e0', color: '#FFFFFF', textAlign: 'left' }}>
+                        <th style={{ padding: '0.5rem', borderBottom: '1px solid #E5E7EB' }}>S/N</th>
+                        <th style={{ padding: '0.5rem', borderBottom: '1px solid #E5E7EB' }}>Item Name</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {shipment.items.map((item, index) => (
+                        <tr key={index}>
+                          <td style={{ padding: '0.5rem', borderBottom: '1px solid #E5E7EB' }}>{index + 1}</td>
+                          <td style={{ padding: '0.5rem', borderBottom: '1px solid #E5E7EB' }}>{item}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </>
           ) : (
@@ -223,10 +409,10 @@ export default function PrintModalContent({ shipment, onClose }) {
         </div>
       </div>
       <div className="flex justify-end gap-2 mt-4">
-        <Button variant="outline" onClick={onClose} className="bg-red-200 hover:bg-red-300 text-gray-800 cursor-pointer">
+        <Button variant="outline" onClick={onClose}>
           Cancel
         </Button>
-        <Button onClick={handleDownloadPDF} disabled={!shipment || isDownloading || isScriptLoading} className="bg-green-600 hover:bg-green-700 text-white cursor-pointer">
+        <Button onClick={handleDownloadPDF} disabled={!shipment || isDownloading || isScriptLoading}>
           {isScriptLoading ? (
             'Loading Libraries...'
           ) : isDownloading ? (

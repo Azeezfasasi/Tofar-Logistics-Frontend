@@ -215,7 +215,7 @@ export default function AllShipmentsMain({ token }) {
     if (loading) { 
         return (
           <section className="py-8 sm:py-12 bg-gray-50 font-inter antialiased flex items-center justify-center min-h-[calc(100vh-120px)]">
-            <FaSpinner className="animate-spin text-blue-600 text-4xl" />
+            <FaSpinner className="animate-spin text-green-600 text-4xl" />
             <p className="ml-3 text-lg text-gray-700">Loading all shipments...</p>
           </section>
         );
@@ -226,7 +226,7 @@ export default function AllShipmentsMain({ token }) {
       <section className="py-8 sm:py-12 bg-gray-50 font-inter antialiased flex flex-col items-center justify-center min-h-[calc(100vh-120px)]">
         <p className="text-red-600 mb-4">Error loading shipments: {String(error)}</p>
         <button
-          className="px-4 py-2 bg-blue-600 text-white rounded"
+          className="px-4 py-2 bg-green-600 text-white rounded"
           onClick={() => fetchShipments()}
         >
           Retry
@@ -321,3 +321,4 @@ export default function AllShipmentsMain({ token }) {
     </div>
   );
 }
+
