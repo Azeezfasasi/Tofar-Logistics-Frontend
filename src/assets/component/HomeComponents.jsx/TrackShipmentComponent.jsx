@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { API_BASE_URL } from '@/config/Api';
 
 export default function TrackShipmentComponent() {
@@ -6,18 +7,20 @@ export default function TrackShipmentComponent() {
   const [trackingResult, setTrackingResult] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [searchParams] = useSearchParams();
 
+  // Check for tracking parameter in URL on component mount
+  useEffect(() => {
+    const trackingParam = searchParams.get('tracking');
+    if (trackingParam) {
+      setTrackingNumber(trackingParam);
+      // Automatically fetch tracking info if parameter is provided
+      performTracking(trackingParam);
+    }
+  }, [searchParams]);
 
-  const handleTrackingChange = (e) => {
-    setTrackingNumber(e.target.value);
-    // Clear previous results/errors when input changes
-    setTrackingResult(null);
-    setError(null);
-  };
-
-  const handleTrackShipment = async (e) => {
-    e.preventDefault();
-    if (!trackingNumber.trim()) {
+  const performTracking = async (trackNum) => {
+    if (!trackNum.trim()) {
       setError('Please enter a tracking number.');
       return;
     }
@@ -27,7 +30,7 @@ export default function TrackShipmentComponent() {
 
     // Make an API call to the backend tracking endpoint
     try {
-      const response = await fetch(`${API_BASE_URL}/shipments/track/${trackingNumber}`);
+      const response = await fetch(`${API_BASE_URL}/shipments/track/${trackNum}`);
       
       // Check if the response is successful
       if (!response.ok) {
@@ -45,6 +48,18 @@ export default function TrackShipmentComponent() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleTrackingChange = (e) => {
+    setTrackingNumber(e.target.value);
+    // Clear previous results/errors when input changes
+    setTrackingResult(null);
+    setError(null);
+  };
+
+  const handleTrackShipment = async (e) => {
+    e.preventDefault();
+    performTracking(trackingNumber);
   };
 
   // Helper function to format the date
@@ -130,7 +145,7 @@ export default function TrackShipmentComponent() {
             {/* Status Card Header */}
             <div className={`rounded-t-2xl p-6 md:p-8 text-white shadow-lg ${
               trackingResult.status?.toLowerCase() === 'delivered' 
-                ? 'bg-gradient-to-r from-blue-500 to-blue-600' 
+                ? 'bg-gradient-to-r from-green-500 to-green-600' 
                 : 'bg-gradient-to-r from-amber-500 to-amber-600'
             }`}>
               <div className="flex items-center justify-between">
@@ -306,12 +321,12 @@ export default function TrackShipmentComponent() {
                     {/* Event content */}
                     <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 hover:shadow-md transition-shadow">
                       <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-2">
-                        <div className="flex flex-col items-center flex-1">
+                        <div className="flex-1">
                           <h4 className="font-bold text-gray-900 leading-tight capitalize text-lg mb-2">
                             {event.status}
                           </h4>
                           {event.location && (
-                            <div className="flex items-center gap-2 mb-2">
+                            <div className="flex items-center justify-center gap-2 mb-2">
                               <svg className="w-4 h-4 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
                                 <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"></path>
                               </svg>
@@ -369,5 +384,7 @@ export default function TrackShipmentComponent() {
     </section>
   );
 }
+
+
 
 
