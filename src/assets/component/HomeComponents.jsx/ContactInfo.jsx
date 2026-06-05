@@ -32,8 +32,8 @@ function ContactInfo() {
               Email us for help with a current shipping or service
             </p>
             {/* Link */}
-            <a href="mailto:info@cargorealmandlogistics.com" className="text-blue-600 hover:underline font-semibold">
-              info@cargorealmandlogistics.com
+            <a href="mailto:info@tofarcargo.com" className="text-blue-600 hover:underline font-semibold">
+              info@tofarcargo.com
             </a>
           </div>
 

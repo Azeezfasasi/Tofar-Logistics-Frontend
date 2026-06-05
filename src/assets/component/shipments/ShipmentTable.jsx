@@ -17,32 +17,31 @@ export default function ShipmentTable({ shipments, onActionClick }) {
   );
 
   return (
-    <div className="rounded-xl border bg-white shadow-md overflow-x-auto">
-      {/* dark:bg-gray-200 */}
+    <div className="overflow-x-auto">
       <table className="w-full text-sm text-left">
-        <thead className="bg-blue-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 uppercase">
+        <thead className="bg-gradient-to-r from-blue-600 to-blue-700 text-white uppercase sticky top-0 z-10">
           <tr>
-            <th className="p-3">#</th>
-            <th className="p-3">Tracking No</th>
-            <th className="p-3">Sender</th>
-            <th className="p-3">Receiver</th>
-            <th className="p-3">Status</th>
-            <th className="p-3">Destination</th>
-            <th className="p-3">Shipment Facility</th>
-            <th className="p-3">Date</th>
-            <th className="p-3">Actions</th>
+            <th className="p-4 font-semibold">#</th>
+            <th className="p-4 font-semibold">Tracking No</th>
+            <th className="p-4 font-semibold">Sender</th>
+            <th className="p-4 font-semibold">Receiver</th>
+            <th className="p-4 font-semibold">Status</th>
+            <th className="p-4 font-semibold">Destination</th>
+            <th className="p-4 font-semibold">Facility</th>
+            <th className="p-4 font-semibold">Date</th>
+            <th className="p-4 font-semibold text-right">Actions</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody className="divide-y divide-gray-200">
           {paginated.map((shipment, idx) => (
-            <tr key={shipment._id} className="border-t hover:bg-gray-50 dark:hover:bg-gray-800">
-              <td className="p-3">{(currentPage - 1) * ITEMS_PER_PAGE + idx + 1}</td>
-              <td className="p-3 font-medium">{shipment.trackingNumber}</td>
-              <td className="p-3">{shipment.senderName}</td>
-              <td className="p-3">{shipment.recipientName}</td>
-              <td className="p-3">
+            <tr key={shipment._id} className="hover:bg-gray-50 transition-colors duration-150 border-b border-gray-100">
+              <td className="p-4 text-gray-600 font-medium">{(currentPage - 1) * ITEMS_PER_PAGE + idx + 1}</td>
+              <td className="p-4 font-semibold text-gray-900">{shipment.trackingNumber}</td>
+              <td className="p-4 text-gray-700">{shipment.senderName}</td>
+              <td className="p-4 text-gray-700">{shipment.recipientName}</td>
+              <td className="p-4">
                 <span
-                  className={`font-medium capitalize w-fit px-2 py-1 rounded-md
+                  className={`font-semibold capitalize w-fit px-3 py-1.5 rounded-full text-xs
                     ${shipment.status === 'delivered' ? 'bg-green-100 text-green-800' :
                     shipment.status === 'in-transit' ? 'bg-yellow-100 text-yellow-800' :
                     shipment.status === 'cancelled' ? 'bg-red-100 text-red-800' :
@@ -79,35 +78,61 @@ export default function ShipmentTable({ shipments, onActionClick }) {
                 </span>
 
               </td>
-              <td className="p-3">{shipment.destination}</td>
-              <td className="p-3">{shipment.shipmentFacility}</td>
-              <td className="p-3">{new Date(shipment.createdAt).toLocaleDateString()}</td>
-              <td className="p-3 space-x-1">
-                <Button size="icon" variant="ghost" onClick={() => onActionClick(shipment, 'qr')} className='cursor-pointer hover:bg-indigo-100'>
-                  <QrCode size={16} />
-                </Button>
-                <Button size="icon" variant="ghost" onClick={() => onActionClick(shipment, 'print')} className='cursor-pointer hover:bg-purple-100'>
-                  <Eye size={16} />
-                </Button>
-                <Button size="icon" variant="ghost" onClick={() => onActionClick(shipment, 'edit')} className='cursor-pointer hover:bg-blue-100'>
-                  <Pencil size={16} />
-                </Button>
-                <Button size="icon" variant="ghost" onClick={() => onActionClick(shipment, 'reply')} className='cursor-pointer hover:bg-green-100'>
-                  <Mail size={16} />
-                </Button>
-                <Button size="icon" variant="ghost" onClick={() => onActionClick(shipment, 'status')} className='cursor-pointer hover:bg-yellow-100'>
-                  <RefreshCcw size={16} />
-                </Button>
-                <Button size="icon" variant="ghost" onClick={() => onActionClick(shipment, 'delete')} className='cursor-pointer hover:bg-red-100'>
-                  <Trash2 size={16} className="text-red-500" />
-                </Button>
+              <td className="p-4 text-gray-700">{shipment.destination}</td>
+              <td className="p-4 text-gray-700">{shipment.shipmentFacility}</td>
+              <td className="p-4 text-gray-600 text-sm">{new Date(shipment.createdAt).toLocaleDateString()}</td>
+              <td className="p-4 space-x-1.5 flex justify-end">
+                <button 
+                  onClick={() => onActionClick(shipment, 'qr')}
+                  className='p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all duration-150 hover:scale-110'
+                  title="View QR Code"
+                >
+                  <QrCode size={18} />
+                </button>
+                <button 
+                  onClick={() => onActionClick(shipment, 'print')}
+                  className='p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-all duration-150 hover:scale-110'
+                  title="View Details"
+                >
+                  <Eye size={18} />
+                </button>
+                <button 
+                  onClick={() => onActionClick(shipment, 'edit')}
+                  className='p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-150 hover:scale-110'
+                  title="Edit Shipment"
+                >
+                  <Pencil size={18} />
+                </button>
+                <button 
+                  onClick={() => onActionClick(shipment, 'reply')}
+                  className='p-2 text-green-600 hover:bg-green-50 rounded-lg transition-all duration-150 hover:scale-110'
+                  title="Send Reply"
+                >
+                  <Mail size={18} />
+                </button>
+                <button 
+                  onClick={() => onActionClick(shipment, 'status')}
+                  className='p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-all duration-150 hover:scale-110'
+                  title="Update Status"
+                >
+                  <RefreshCcw size={18} />
+                </button>
+                <button 
+                  onClick={() => onActionClick(shipment, 'delete')}
+                  className='p-2 text-red-600 hover:bg-red-50 rounded-lg transition-all duration-150 hover:scale-110'
+                  title="Delete Shipment"
+                >
+                  <Trash2 size={18} />
+                </button>
               </td>
             </tr>
           ))}
           {paginated.length === 0 && (
             <tr>
-              <td colSpan={8} className="p-3 text-center text-gray-500">
-                No shipments found.
+              <td colSpan={9} className="p-8 text-center">
+                <div className="text-5xl mb-2">📦</div>
+                <p className="text-gray-500 font-medium">No shipments found</p>
+                <p className="text-gray-400 text-sm">Try adjusting your filters or search criteria</p>
               </td>
             </tr>
           )}
@@ -115,27 +140,25 @@ export default function ShipmentTable({ shipments, onActionClick }) {
       </table>
 
       {/* Pagination */}
-      <div className="flex items-center justify-between p-4 border-t">
-        <div className="text-sm text-gray-600 dark:text-gray-300">
-          Page {currentPage} of {totalPages}
+      <div className="flex items-center justify-between p-6 border-t border-gray-200 bg-gray-50">
+        <div className="text-sm text-gray-600 font-medium">
+          Page <span className="font-bold text-gray-900">{currentPage}</span> of <span className="font-bold text-gray-900">{totalPages}</span> • Total: <span className="font-bold text-gray-900">{visibleShipments.length}</span> shipments
         </div>
-        <div className="space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
+        <div className="flex gap-3">
+          <button
             disabled={currentPage === 1}
             onClick={() => setCurrentPage(prev => prev - 1)}
+            className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium"
           >
-            Prev
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
+            ← Previous
+          </button>
+          <button
             disabled={currentPage === totalPages}
             onClick={() => setCurrentPage(prev => prev + 1)}
+            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium"
           >
-            Next
-          </Button>
+            Next →
+          </button>
         </div>
       </div>
     </div>

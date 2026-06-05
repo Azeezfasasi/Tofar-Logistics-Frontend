@@ -231,50 +231,69 @@ export default function AllShipmentsMain({ token }) {
     };
     
     if (loading) { 
-        return (
-          <section className="py-8 sm:py-12 bg-gray-50 font-inter antialiased flex items-center justify-center min-h-[calc(100vh-120px)]">
-            <FaSpinner className="animate-spin text-green-600 text-4xl" />
-            <p className="ml-3 text-lg text-gray-700">Loading all shipments...</p>
-          </section>
-        );
-      }
+    return (
+      <section className="py-16 bg-gradient-to-br from-gray-50 to-gray-100 font-inter antialiased flex items-center justify-center min-h-[calc(100vh-120px)]">
+        <div className="flex flex-col items-center gap-4">
+          <div className="relative w-16 h-16">
+            <FaSpinner className="animate-spin text-green-600 text-5xl absolute inset-0" />
+          </div>
+          <p className="text-lg text-gray-700 font-medium">Loading all shipments...</p>
+          <p className="text-sm text-gray-500">Please wait a moment</p>
+        </div>
+      </section>
+    );
+  }
 
   if (error) {
     return (
-      <section className="py-8 sm:py-12 bg-gray-50 font-inter antialiased flex flex-col items-center justify-center min-h-[calc(100vh-120px)]">
-        <p className="text-red-600 mb-4">Error loading shipments: {String(error)}</p>
-        <button
-          className="px-4 py-2 bg-green-600 text-white rounded"
-          onClick={() => fetchShipments()}
-        >
-          Retry
-        </button>
+      <section className="py-16 bg-gradient-to-br from-gray-50 to-gray-100 font-inter antialiased flex flex-col items-center justify-center min-h-[calc(100vh-120px)]">
+        <div className="bg-white rounded-lg shadow-lg p-8 max-w-md text-center">
+          <div className="mb-4 text-5xl">⚠️</div>
+          <h3 className="text-xl font-bold text-gray-900 mb-2">Something went wrong</h3>
+          <p className="text-red-600 mb-6 text-sm">{String(error)}</p>
+          <button
+            className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all duration-200 font-medium"
+            onClick={() => fetchShipments()}
+          >
+            Try Again
+          </button>
+        </div>
       </section>
     );
   }
 
   return (
-    <div className="p-4 space-y-6">
-      <div className='font-bold text-[20px] lg:text-[28px]'>All Shipments</div>
+    <div className="p-6 space-y-6 bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className='font-bold text-3xl lg:text-4xl text-gray-900'>All Shipments</h1>
+          <p className="text-gray-600 text-sm mt-1">Manage and track your logistics shipments</p>
+        </div>
+        <div className="hidden md:block text-4xl">📦</div>
+      </div>
       {/* Toolbar and Filters */}
-      <ShipmentToolbar
-        searchQuery={searchQuery}
-        onSearch={handleSearch}
-        onStatusChange={handleFilter}
-        onFacilityChange={handleFacilityChange}
-        selectedFacility={selectedFacility}
-        selectedStatus={selectedStatus}
-        facilities={facilities}
-        statuses={statuses}
-        onExport={() => exportToExcel(filteredShipments, 'All_Shipments')}
-      />
+      <div className="bg-white rounded-xl shadow-md p-6 backdrop-blur-sm">
+        <ShipmentToolbar
+          searchQuery={searchQuery}
+          onSearch={handleSearch}
+          onStatusChange={handleFilter}
+          onFacilityChange={handleFacilityChange}
+          selectedFacility={selectedFacility}
+          selectedStatus={selectedStatus}
+          facilities={facilities}
+          statuses={statuses}
+          onExport={() => exportToExcel(filteredShipments, 'All_Shipments')}
+        />
+      </div>
 
       {/* Table */}
-      <ShipmentTable
-        shipments={filteredShipments}
-        onActionClick={openModal}
-        onDeleteClick={(shipment) => openModal(shipment, 'delete')}
-      />
+      <div className="bg-white rounded-xl shadow-md overflow-hidden">
+        <ShipmentTable
+          shipments={filteredShipments}
+          onActionClick={openModal}
+          onDeleteClick={(shipment) => openModal(shipment, 'delete')}
+        />
+      </div>
 
         {/* Modals */}
         {selectedShipment && (
