@@ -2,11 +2,8 @@ import React, { useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
-// import { FaSpinner, FaTimesCircle } from 'react-icons/fa';
 import { FaSpinner, FaTimesCircle, FaPlus, FaTrash } from 'react-icons/fa'; 
-
-// Assuming API_BASE_URL is correctly defined and imported
-import { API_BASE_URL } from '../../../config/Api'; 
+import { API_BASE_URL } from '../../../config/Api';
 
 const generateTrackingNumber = () => {
   const rand = Math.floor(10000000000 + Math.random() * 90000000000);
@@ -45,43 +42,68 @@ export default function CreateShipmentForm({ token }) {
     shipmentFacility: '',
   });
 
+  // State for the new item input
   const [newItem, setNewItem] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [senderMode, setSenderMode] = useState('select'); // 'select' or 'email'
 
-  // Fetch users for the sender dropdown
-  const { 
-    data: users, 
-    isLoading: isLoadingUsers, 
-    isError: isErrorUsers, 
-    error: usersError 
+  // Fetch users for the sender dropdown (for auto-lookup)
+  const {
+    data: users
   } = useQuery({
-    queryKey: ['allUsers'], // Use a distinct query key
+
+    queryKey: ['allUsers'],
     queryFn: async () => {
-      const res = await axios.get(`${API_BASE_URL}/profile/all`, { // Ensure API_BASE_URL is used
+      const res = await axios.get(`${API_BASE_URL}/profile/all`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-      // Ensure the API returns an array. If it returns null/undefined, default to empty array.
+
       return Array.isArray(res.data) ? res.data : [];
     },
-    enabled: !!token, // Only run this query if token exists
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    cacheTime: 10 * 60 * 1000, // 10 minutes
+
+    enabled: !!token,
+    staleTime: 5 * 60 * 1000,
+    cacheTime: 10 * 60 * 1000,
   });
 
   const mutation = useMutation({
     mutationFn: async (shipmentData) => {
-      const res = await axios.post(`${API_BASE_URL}/shipments`, shipmentData, { // Ensure API_BASE_URL is used
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      return res.data;
+      // Client-side retry for duplicate tracking numbers
+      const maxAttempts = 5;
+      let attempt = 0;
+      let lastError;
+      let payload = { ...shipmentData };
+      while (attempt < maxAttempts) {
+        try {
+          const res = await axios.post(`${API_BASE_URL}/shipments`, payload, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          return res.data;
+        } catch (err) {
+          lastError = err;
+          // If duplicate key on trackingNumber, regenerate and retry
+          const isDuplicate = err?.response?.data?.errmsg?.includes('duplicate key') || err?.response?.status === 409 || (err?.code === 11000 || err?.response?.data?.code === 11000);
+          if (isDuplicate) {
+            attempt += 1;
+            payload = { ...shipmentData, trackingNumber: generateTrackingNumber() };
+            console.warn(`Duplicate tracking number detected. Retrying with new tracking number (attempt ${attempt})`);
+            continue;
+          }
+          // Non-retryable error: rethrow
+          throw err;
+        }
+      }
+      // if we exit loop without success, throw last error
+      throw lastError;
     },
     onSuccess: () => {
       setSubmitting(false);
       toast.success('Shipment created successfully');
+      setSenderMode('select'); // Reset to select mode
       setForm((prev) => ({
         ...prev,
         trackingNumber: generateTrackingNumber(), // reset tracking number
@@ -113,16 +135,51 @@ export default function CreateShipmentForm({ token }) {
         shipmentPurpose: '',
         shipmentFacility: '',
       }));
+      // Reset the new item input field
+      setNewItem('');
     },
     onError: (err) => {
       setSubmitting(false);
-      toast.error(err.response?.data?.message || 'Error creating shipment');
+      const message = err?.response?.data?.message || err?.message || 'Error creating shipment';
+      // Show helpful guidance if duplicate-key exhausted
+      if (err?.response?.data?.errmsg?.includes('duplicate key') || err?.code === 11000) {
+        toast.error('Duplicate tracking number. Please try again or contact support.');
+      } else {
+        toast.error(message);
+      }
+      console.error('Create shipment error (frontend):', err);
     },
   });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // Handle sender email change and auto-lookup user
+  const handleSenderEmailChange = (e) => {
+    const email = e.target.value;
+    setForm((prev) => ({ ...prev, senderEmail: email }));
+
+    // Auto-lookup user if email matches an existing user
+    if (email && users) {
+      const matchedUser = users.find(user => user.email?.toLowerCase() === email.toLowerCase());
+      if (matchedUser) {
+        setForm((prev) => ({
+          ...prev,
+          sender: matchedUser._id,
+          senderName: matchedUser.fullName || '',
+          senderPhone: matchedUser.phone || '',
+          senderAddress: matchedUser.address || '',
+        }));
+      } else {
+        // Clear sender if email doesn't match any user
+        setForm((prev) => ({
+          ...prev,
+          sender: '',
+        }));
+      }
+    }
   };
 
   const handleAddItem = (e) => {
@@ -145,17 +202,21 @@ export default function CreateShipmentForm({ token }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!form.sender) {
-      return toast.error('Please select a sender');
+    if (senderMode === 'select' && !form.sender) {
+      return toast.error('Please select a sender from the system');
+    }
+    if (senderMode === 'email' && !form.senderEmail) {
+      return toast.error('Please enter a sender email address');
     }
     setSubmitting(true);
     mutation.mutate(form);
   };
 
   return (
-    <div className="max-w-3xl mx-auto mt-10 p-6 bg-white shadow-md rounded-2xl border border-solid border-blue-600">
+    <div className="max-w-3xl mx-auto mt-10 mb-10 p-6 bg-white shadow-md rounded-2xl border border-solid border-blue-600">
       <h2 className="text-2xl font-semibold mb-6 text-blue-700">Create New Shipment</h2>
       <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* ... (all other form fields) ... */}
         <div>
           <label className="block text-sm font-medium mb-1">Tracking Number</label>
           <input
@@ -166,31 +227,81 @@ export default function CreateShipmentForm({ token }) {
           />
         </div>
 
-        <div>
-          <label className="block text-sm font-medium mb-1">Assign Sender</label>
-          {isLoadingUsers ? (
-            <div className="flex items-center text-gray-600">
-              <FaSpinner className="animate-spin mr-2" /> Loading users...
-            </div>
-          ) : isErrorUsers ? (
-            <div className="flex items-center text-red-600">
-              <FaTimesCircle className="mr-2" /> Error loading users: {usersError?.message}
-            </div>
-          ) : (
-            <select
-              name="sender"
-              value={form.sender}
-              onChange={handleChange}
-              className="w-full border border-solid border-blue-600 rounded p-2 focus:outline-none focus:ring focus:ring-blue-600"
+        <div className="md:col-span-2">
+          <label className="block text-sm font-medium mb-3">Assign Sender</label>
+          
+          {/* Toggle Buttons */}
+          <div className="grid grid-cols-2 gap-2 mb-4">
+            <button
+              type="button"
+              onClick={() => setSenderMode('select')}
+              className={`py-2 px-4 rounded font-medium transition ${
+                senderMode === 'select'
+                  ? 'bg-blue-600 text-white border border-blue-600'
+                  : 'bg-white text-gray-700 border border-blue-600'
+              }`}
             >
-              <option value="">Select user</option>
-              {/* Ensure users is an array before mapping */}
-              {users && users.map((user) => (
-                <option key={user._id} value={user._id}>
-                  {user.fullName} ({user.email})
-                </option>
-              ))}
-            </select>
+              Select Existing User
+            </button>
+            <button
+              type="button"
+              onClick={() => setSenderMode('email')}
+              className={`py-2 px-4 rounded font-medium transition ${
+                senderMode === 'email'
+                  ? 'bg-blue-600 text-white border border-blue-600'
+                  : 'bg-white text-gray-700 border border-blue-600'
+              }`}
+            >
+              Enter Manual ID
+            </button>
+          </div>
+
+          {/* Select Existing User Mode */}
+          {senderMode === 'select' && (
+            <div className="p-4 bg-blue-50 border border-solid border-blue-600 rounded-lg">
+              <select
+                name="sender"
+                value={form.sender}
+                onChange={handleChange}
+                className="w-full border border-solid border-blue-600 rounded p-2 focus:outline-none focus:ring focus:ring-blue-600"
+              >
+                <option value="">Select a user from the system</option>
+                {users && users.map((user) => (
+                  <option key={user._id} value={user._id}>
+                    {user.fullName} ({user.email})
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-gray-600 mt-2">
+                Choose an existing user to assign as the sender for this shipment.
+              </p>
+            </div>
+          )}
+
+          {/* Enter Manual ID Mode (Email) */}
+          {senderMode === 'email' && (
+            <div className="p-4 bg-blue-50 border border-solid border-blue-600 rounded-lg">
+              <input
+                type="email"
+                name="senderEmail"
+                value={form.senderEmail}
+                onChange={handleSenderEmailChange}
+                placeholder='Enter sender email address (e.g., user@example.com)'
+                className="w-full border border-solid border-blue-600 rounded p-2 focus:outline-none focus:ring focus:ring-blue-600 mb-2"
+              />
+              <p className="text-xs text-gray-600 mt-2">
+                Enter the sender's email address. The system will automatically:
+              </p>
+              <ul className="text-xs text-gray-600 ml-4 mt-1">
+                <li>• Link to their account if the email exists in the system</li>
+                <li>• Send a confirmation email if the address is external or not registered</li>
+              </ul>
+              {form.sender && (
+                <p className="text-xs text-blue-700 mt-2 font-medium">
+                  ✓ Linked to existing user
+                </p>
+              )}
+            </div>
           )}
         </div>
 
@@ -214,18 +325,6 @@ export default function CreateShipmentForm({ token }) {
             value={form.senderPhone}
             onChange={handleChange}
             placeholder='Enter the sender Phone Number'
-            className="w-full border border-solid border-blue-600 rounded p-2 focus:outline-none focus:ring focus:ring-blue-600"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-1">Sender Email Address</label>
-          <input
-            type="email"
-            name="senderEmail"
-            value={form.senderEmail}
-            onChange={handleChange}
-            placeholder='Enter the sender Email Address'
             className="w-full border border-solid border-blue-600 rounded p-2 focus:outline-none focus:ring focus:ring-blue-600"
           />
         </div>
@@ -316,7 +415,7 @@ export default function CreateShipmentForm({ token }) {
 
         {/* section for adding items */}
         <div className="md:col-span-2">
-            <label className="block text-sm font-medium mb-1">Items in Shipment <span className='text-[13px] text-blue-800'>Enter an item and click the plus button to add</span></label>
+            <label className="block text-sm font-medium mb-1">Items in Shipment <span className='text-[13px] text-blue-700'>Enter an item and click the plus button to add</span></label>
             <div className="flex items-center space-x-2 mb-2">
                 <input
                   type="text"
@@ -366,7 +465,7 @@ export default function CreateShipmentForm({ token }) {
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">Length (Optional)</label>
+          <label className="block text-sm font-medium mb-1">Length (cm) - (Optional)</label>
           <input
             type="number"
             name="length"
@@ -378,7 +477,7 @@ export default function CreateShipmentForm({ token }) {
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">Width (Optional)</label>
+          <label className="block text-sm font-medium mb-1">Width (cm) - (Optional)</label>
           <input
             type="number"
             name="width"
@@ -390,7 +489,7 @@ export default function CreateShipmentForm({ token }) {
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">Breadth (cm) (Optional)</label>
+          <label className="block text-sm font-medium mb-1">Breadth (cm) - (Optional)</label>
           <input
             type="number"
             name="breadth"
@@ -534,13 +633,13 @@ export default function CreateShipmentForm({ token }) {
           <button
             type="submit"
             disabled={mutation.isLoading || submitting}
-            className="w-full bg-blue-600 text-white font-semibold py-2 rounded hover:bg-blue-700 transition"
+            className="w-full bg-blue-600 text-white font-semibold py-2 rounded hover:bg-blue-700 transition flex items-center justify-center gap-2"
           >
             {(mutation.isLoading || submitting) ? (
-              <div className="flex items-center justify-center gap-2">
+              <>
                 <FaSpinner className="animate-spin" />
                 <span>Creating Shipment...</span>
-              </div>
+              </>
             ) : (
               <span>Create Shipment</span>
             )}

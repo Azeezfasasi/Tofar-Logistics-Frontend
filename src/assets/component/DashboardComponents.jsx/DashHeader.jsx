@@ -58,7 +58,8 @@ function DashHeader() {
     '/app/account/addnewuser': { key: '9-2', parent: '9' },
     '/app/account/changeuserpassword': { key: '9-3', parent: '9' },
     '/app/account/profile': { key: '10', parent: null },
-    '/app/account/manage-messageslides': { key: '11-1', parent: '11' },
+    '/app/account/send-test-sms': { key: '11', parent: null },
+    '/app/account/manage-messageslides': { key: '12-1', parent: '12' },
   };
   
   // Normalize pathname to handle trailing slashes and query params
@@ -242,9 +243,14 @@ function DashHeader() {
                     Profile
                 </Nav.Item>
                 )}
+                {(isAdmin || isEmployee) && (
+                <Nav.Item eventKey="11" icon={<UserInfoIcon />} as={Link} to="/app/account/sms-dashboard">
+                    SMS Dashboard
+                </Nav.Item>
+                )}
                 {(isAdmin) && (
-                <Nav.Menu eventKey="11" title="Manage Messages Slides" icon={<GearIcon />}>
-                    <Nav.Item eventKey="11-1" as={Link} to="/app/account/manage-messageslides">Messages Slides</Nav.Item>
+                <Nav.Menu eventKey="12" title="Manage Messages Slides" icon={<GearIcon />}>
+                    <Nav.Item eventKey="12-1" as={Link} to="/app/account/manage-messageslides">Messages Slides</Nav.Item>
                 </Nav.Menu>
                 )}
                 {(isAdmin || isAgent || isEmployee || isClient) && (

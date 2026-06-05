@@ -55,6 +55,13 @@ import ArchivedShipments from "./app/account/ArchivedShipments"
 import ManageMessageSlides from "./app/account/ManageMessageSlides";
 import ManageFacility from "./app/account/ManageFacility";
 import ManageShipmentStatus from "./app/account/ManageShipmentStatus";
+import SMSDashboard from "./components/sms-components/SMSDashboard";
+import SendTestSMS from "./components/sms-components/SendTestSMS";
+import SMSBalance from "./components/sms-components/SMSBalance";
+import SmsLogs from "./components/sms-components/SMSLogs";
+import SMSSettings from "./components/sms-components/SMSSettings";
+import SMSStatistics from "./components/sms-components/SMSStatistics";
+import SMSLogs from "./components/sms-components/SMSLogs";
 
 function App() {
 
@@ -117,6 +124,14 @@ function App() {
           <Route path="/app/account/manage-messageslides" element={<ManageMessageSlides/>} />
           <Route path="/app/account/manage-facilities" element={<ManageFacility/>} />
           <Route path="/app/account/manage-shipment-statuses" element={<ManageShipmentStatus />} />
+
+          {/* SMS Components */}
+          <Route path="/app/account/send-test-sms" element={<SendTestSMS />} />
+          <Route path="/app/account/sms-balance" element={<SMSBalance />} />
+          <Route path="/app/account/sms-dashboard" element={<SMSDashboard />} />
+          <Route path="/app/account/sms-logs" element={<SMSLogs />} />
+          <Route path="/app/account/sms-settings" element={<SMSSettings />} />
+          <Route path="/app/account/sms-statistics" element={<SMSStatistics />} />
         </Routes>
       </ProfileProvider>
     </>
