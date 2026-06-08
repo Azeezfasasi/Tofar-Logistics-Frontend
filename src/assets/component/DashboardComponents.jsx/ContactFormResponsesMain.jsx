@@ -26,23 +26,34 @@ function ContactFormResponsesMain() {
 
   // State for reply modal
   const [showReplyModal, setShowReplyModal] = useState(false);
-  const [currentContactForReply, setCurrentContactForReply] = useState(null); // Stores the full contact object
+  const [currentContactForReply, setCurrentContactForReply] = useState(null);
   const [replySubject, setReplySubject] = useState('');
   const [replyContent, setReplyContent] = useState('');
   const [replyError, setReplyError] = useState('');
 
-  const [actionMessage, setActionMessage] = useState(''); // For general success messages
-  const [actionError, setActionError] = useState(''); // For general action errors
+  const [actionMessage, setActionMessage] = useState('');
+  const [actionError, setActionError] = useState('');
+
+  // State for search, filter, and pagination
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState(''); // Empty string means show all
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  // Determine if the user has permission to manage contact forms
+  const hasPermission = isAuthenticated && (isAdmin || isEmployee);
 
   // Clear messages when starting a new action or editing
   useEffect(() => {
     setActionError('');
     setActionMessage('');
-    setReplyError(''); // Clear reply specific error
+    setReplyError('');
   }, [editingContactId, showReplyModal]);
 
-  // Determine if the user has permission to manage contact forms
-  const hasPermission = isAuthenticated && (isAdmin || isEmployee);
+  // Reset to page 1 when search or filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, filterStatus]);
 
   // Fetch all contact forms for admin/employee management
   const {
@@ -53,18 +64,56 @@ function ContactFormResponsesMain() {
   } = useQuery({
     queryKey: ['allContactForms'], // Unique key for fetching all contact forms
     queryFn: async () => {
+      // Get token from localStorage
+      const token = localStorage.getItem('token');
+      
       // This endpoint is now accessible by admin and employee on the backend
-      const response = await axios.get(`${API_BASE_URL}/contact`);
+      const response = await axios.get(`${API_BASE_URL}/contact`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
       return response.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); // Sort by creation date
     },
     staleTime: 5 * 60 * 1000,
     enabled: hasPermission, // Only run if authenticated AND (isAdmin OR isEmployee)
   });
 
+  // Filter and search logic
+  const getFilteredAndSearchedContacts = () => {
+    if (!contacts) return [];
+    
+    return contacts.filter((contact) => {
+      // Search filter - search in name, email, and message
+      const searchMatch = 
+        contact.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        contact.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        contact.message.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      // Status filter
+      const statusMatch = filterStatus === '' || contact.status === filterStatus;
+      
+      return searchMatch && statusMatch;
+    });
+  };
+
+  const filteredContacts = getFilteredAndSearchedContacts();
+  const totalPages = Math.ceil(filteredContacts.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedContacts = filteredContacts.slice(startIndex, endIndex);
+
   // Mutation for editing a contact form
   const editContactFormMutation = useMutation({
     mutationFn: async (updatedContact) => {
-      const response = await axios.put(`${API_BASE_URL}/contact/${updatedContact._id}`, updatedContact);
+      const token = localStorage.getItem('token');
+      const response = await axios.put(`${API_BASE_URL}/contact/${updatedContact._id}`, updatedContact, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
       return response.data;
     },
     onSuccess: () => {
@@ -83,7 +132,13 @@ function ContactFormResponsesMain() {
   // Mutation for deleting a contact form
   const deleteContactFormMutation = useMutation({
     mutationFn: async (contactId) => {
-      await axios.delete(`${API_BASE_URL}/contact/${contactId}`);
+      const token = localStorage.getItem('token');
+      await axios.delete(`${API_BASE_URL}/contact/${contactId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
     },
     onSuccess: () => {
       setActionMessage('Contact form deleted successfully!');
@@ -100,7 +155,13 @@ function ContactFormResponsesMain() {
   // Mutation for replying to a contact form
   const replyToContactFormMutation = useMutation({
     mutationFn: async ({ contactId, subject, replyContent }) => {
-      const response = await axios.post(`${API_BASE_URL}/contact/${contactId}/reply`, { subject, replyContent });
+      const token = localStorage.getItem('token');
+      const response = await axios.post(`${API_BASE_URL}/contact/${contactId}/reply`, { subject, replyContent }, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
       return response.data;
     },
     onSuccess: () => {
@@ -262,33 +323,79 @@ function ContactFormResponsesMain() {
           </div>
         )}
 
+        {/* Search and Filter Section */}
+        <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Search Input */}
+            <div>
+              <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-2">
+                Search
+              </label>
+              <input
+                type="text"
+                id="search"
+                placeholder="Search by name, email, or message..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            {/* Status Filter */}
+            <div>
+              <label htmlFor="filter" className="block text-sm font-medium text-gray-700 mb-2">
+                Filter by Status
+              </label>
+              <select
+                id="filter"
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+              >
+                <option value="">All Statuses</option>
+                <option value="new">New</option>
+                <option value="read">Read</option>
+                <option value="replied">Replied</option>
+                <option value="archived">Archived</option>
+              </select>
+            </div>
+          </div>
+          {filteredContacts.length > 0 && (
+            <p className="text-sm text-gray-600 mt-3">
+              Showing <span className="font-semibold">{startIndex + 1}</span> to <span className="font-semibold">{Math.min(endIndex, filteredContacts.length)}</span> of <span className="font-semibold">{filteredContacts.length}</span> results
+            </p>
+          )}
+        </div>
+
         {contacts && contacts.length > 0 ? (
-          <div className="overflow-x-auto bg-white rounded-xl shadow-lg p-6">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Name
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Email
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Message Snippet
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Received At
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {contacts.map((contact) => (
+          <>
+            <div className="overflow-x-auto bg-white rounded-xl shadow-lg p-6">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Name
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Email
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Message Snippet
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Received At
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {paginatedContacts.length > 0 ? (
+                    paginatedContacts.map((contact) => (
                   <React.Fragment key={contact._id}>
                     <tr>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
@@ -429,10 +536,55 @@ function ContactFormResponsesMain() {
                       </tr>
                     )}
                   </React.Fragment>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="6" className="px-6 py-8 text-center text-gray-600">
+                    No contact forms match your search or filter criteria.
+                  </td>
+                </tr>
+              )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination Controls */}
+            {filteredContacts.length > itemsPerPage && (
+              <div className="flex items-center justify-between bg-white rounded-xl shadow-lg p-6 mt-6">
+                <button
+                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                  disabled={currentPage === 1}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition duration-200"
+                >
+                  Previous
+                </button>
+
+                <div className="flex items-center space-x-2">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`px-3 py-2 rounded-lg transition duration-200 ${
+                        page === currentPage
+                          ? 'bg-blue-600 text-white font-semibold'
+                          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                  disabled={currentPage === totalPages}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition duration-200"
+                >
+                  Next
+                </button>
+              </div>
+            )}
+          </>
         ) : (
           <p className="text-center text-gray-600">No contact form submissions to manage.</p>
         )}

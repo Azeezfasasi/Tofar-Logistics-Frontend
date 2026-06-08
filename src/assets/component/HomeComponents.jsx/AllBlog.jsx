@@ -86,7 +86,7 @@ function AllBlog() {
                   </h3>
                 </div>
                 <div className="text-gray-700 leading-relaxed mb-6 flex-grow">
-                  {post.description}
+                  {post.description.split(' ').slice(0, 15).join(' ') + '...'}
                 </div>
                 <div className="text-gray-600 text-sm mt-auto">
                   <p className="font-semibold">{post.sentBy ? post.sentBy.name : 'Unknown Author'}</p>

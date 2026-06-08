@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import axios from 'axios';
-import { API_BASE_URL } from '../../../config/Api'; // Adjust path as needed
-import { useProfile } from '../../context-api/ProfileContext'; // Adjust path as needed for your ProfileContext
+import { API_BASE_URL } from '../../../config/Api';
+import { useProfile } from '../../context-api/ProfileContext';
 import { Link, useNavigate } from 'react-router-dom';
+import './SendNewsletterMain.css';
 
 function SendNewsletterMain() {
 //   const queryClient = useQueryClient();
@@ -16,6 +17,7 @@ function SendNewsletterMain() {
   // State for form fields
   const [subject, setSubject] = useState('');
   const [content, setContent] = useState('');
+  const editorRef = useRef(null);
 
   const [localError, setLocalError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
@@ -24,13 +26,46 @@ function SendNewsletterMain() {
   useEffect(() => {
     setLocalError('');
     setSuccessMessage('');
-  }, [subject, content]);
+  }, [subject]);
+
+  // Formatting functions
+  const formatText = (command, value = null) => {
+    editorRef.current?.focus();
+    setTimeout(() => {
+      if (value) {
+        document.execCommand(command, false, value);
+      } else {
+        document.execCommand(command, false, null);
+      }
+      editorRef.current?.focus();
+    }, 0);
+  };
+
+  const insertLink = () => {
+    editorRef.current?.focus();
+    const url = prompt('Enter URL (e.g., https://example.com):');
+    if (url) {
+      document.execCommand('createLink', false, url);
+      editorRef.current?.focus();
+    }
+  };
+
+  const handleEditorChange = () => {
+    if (editorRef.current) {
+      setContent(editorRef.current.innerHTML);
+    }
+  };
 
   // Mutation for sending a newsletter
   const sendNewsletterMutation = useMutation({
     mutationFn: async (newsletterData) => {
       // Your backend route POST /newsletter/send is protected by authorize('admin').
-      const response = await axios.post(`${API_BASE_URL}/newsletter/send`, newsletterData);
+      const response = await axios.post(`${API_BASE_URL}/newsletter/send`, newsletterData, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json',
+        },
+      });
       return response.data;
     },
     onSuccess: () => {
@@ -58,16 +93,14 @@ function SendNewsletterMain() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    setLocalError(''); // Clear previous local errors
-    setSuccessMessage(''); // Clear previous success messages
+    setLocalError('');
+    setSuccessMessage('');
 
-    // Client-side validation
-    if (!subject.trim() || !content.trim()) {
+    if (!subject.trim() || !content.trim() || content === '<p><br></p>' || content === '') {
       setLocalError('Subject and Content cannot be empty.');
       return;
     }
 
-    // Trigger the mutation
     sendNewsletterMutation.mutate({ subject, content });
   };
 
@@ -135,18 +168,89 @@ function SendNewsletterMain() {
           </div>
 
           <div>
-            <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-2">
               Content <span className="text-red-500">*</span>
             </label>
-            <textarea
-              id="content"
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder="Write your newsletter content here..."
-              rows="10"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y"
-              required
-            ></textarea>
+            
+            {/* Toolbar */}
+            <div className="flex flex-wrap gap-2 mb-2 p-2 bg-gray-100 border border-gray-300 rounded-t-lg">
+              <button
+                type="button"
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  formatText('bold');
+                }}
+                className="px-3 py-1 bg-white border border-gray-300 rounded hover:bg-gray-200 font-bold text-sm"
+                title="Bold"
+              >
+                B
+              </button>
+              <button
+                type="button"
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  formatText('italic');
+                }}
+                className="px-3 py-1 bg-white border border-gray-300 rounded hover:bg-gray-200 italic text-sm"
+                title="Italic"
+              >
+                I
+              </button>
+              <button
+                type="button"
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  formatText('underline');
+                }}
+                className="px-3 py-1 bg-white border border-gray-300 rounded hover:bg-gray-200 underline text-sm"
+                title="Underline"
+              >
+                U
+              </button>
+
+              <div className="w-px bg-gray-300 mx-1"></div>
+
+              <button
+                type="button"
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  insertLink();
+                }}
+                className="px-3 py-1 bg-white border border-gray-300 rounded hover:bg-gray-200 text-sm text-blue-600"
+                title="Link"
+              >
+                Link
+              </button>
+
+              <div className="w-px bg-gray-300 mx-1"></div>
+
+              <button
+                type="button"
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  formatText('removeFormat');
+                }}
+                className="px-3 py-1 bg-white border border-gray-300 rounded hover:bg-gray-200 text-sm"
+                title="Clear Formatting"
+              >
+                Clear
+              </button>
+            </div>
+
+            {/* Editor */}
+            <div
+              ref={editorRef}
+              contentEditable
+              suppressContentEditableWarning
+              onInput={handleEditorChange}
+              className="w-full px-4 py-3 border border-gray-300 rounded-b-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-80 max-h-96 overflow-auto bg-white"
+              style={{
+                whiteSpace: 'pre-wrap',
+                wordWrap: 'break-word',
+              }}
+            >
+              
+            </div>
           </div>
 
           <button

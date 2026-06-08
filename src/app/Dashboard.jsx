@@ -4,7 +4,6 @@ import DashHeader from '../assets/component/DashboardComponents.jsx/DashHeader'
 import DashMenu from '../assets/component/DashboardComponents.jsx/DashMenu'
 import DashboardStats from '../assets/component/DashboardComponents.jsx/DashboardStats'
 import AppointmentStatusChart from '../assets/component/DashboardComponents.jsx/AppointmentChart'
-import PrayerRequestStatusChart from '../assets/component/DashboardComponents.jsx/PrayerRequestStatusChart'
 import ShipmentChart from '@/assets/component/DashboardComponents.jsx/ShipmentChart'
 import QuoteChart from '@/assets/component/DashboardComponents.jsx/QuoteChart'
 import UserRolesChart from '@/assets/component/DashboardComponents.jsx/UserChart'
@@ -33,9 +32,9 @@ function Dashboard() {
       }
       {(isAdmin || isEmployee) &&
       <>
-       <UserRolesChart />
        <ShipmentChart />
        <QuoteChart />
+       <UserRolesChart />
        <AppointmentStatusChart />
        </>
       }

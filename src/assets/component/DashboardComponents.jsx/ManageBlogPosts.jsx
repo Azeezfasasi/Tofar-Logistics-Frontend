@@ -16,6 +16,18 @@ function ManageBlogPosts() {
   const [actionMessage, setActionMessage] = useState('');
   const [actionError, setActionError] = useState('');
 
+  // State for search, filter, and pagination
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState('');
+  const [filterCategory, setFilterCategory] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  // Reset to page 1 when search or filter changes
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, filterStatus, filterCategory]);
+
   // Fetch ALL blog posts (published, draft, archived) for admin management
   const {
     data: blogPosts, 
@@ -25,17 +37,55 @@ function ManageBlogPosts() {
   } = useQuery({
     queryKey: ['adminBlogPosts'],
     queryFn: async () => {
-      const response = await axios.get(`${API_BASE_URL}/blogs/admin/all`);
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`${API_BASE_URL}/blogs/admin/all`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
       return response.data;
     },
     staleTime: 5 * 60 * 1000,
-    enabled: isAuthenticated && isAdmin || isEmployee,
+    enabled: isAuthenticated && (isAdmin || isEmployee),
   });
+
+  // Filter and search logic
+  const getFilteredAndSearchedBlogs = () => {
+    if (!blogPosts) return [];
+    
+    return blogPosts.filter((blog) => {
+      // Search filter - search in title and description
+      const searchMatch = 
+        blog.blogTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        blog.description.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      // Status filter
+      const statusMatch = filterStatus === '' || blog.status === filterStatus;
+      
+      // Category filter
+      const categoryMatch = filterCategory === '' || blog.category === filterCategory;
+      
+      return searchMatch && statusMatch && categoryMatch;
+    });
+  };
+
+  const filteredBlogs = getFilteredAndSearchedBlogs();
+  const totalPages = Math.ceil(filteredBlogs.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedBlogs = filteredBlogs.slice(startIndex, endIndex);
 
   // Mutation for editing a blog
   const editBlogMutation = useMutation({
     mutationFn: async (updatedBlog) => {
-      const response = await axios.put(`${API_BASE_URL}/blogs/${updatedBlog._id}`, updatedBlog);
+      const token = localStorage.getItem('token');
+      const response = await axios.put(`${API_BASE_URL}/blogs/${updatedBlog._id}`, updatedBlog, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
       return response.data;
     },
     onSuccess: () => {
@@ -54,7 +104,13 @@ function ManageBlogPosts() {
   // Mutation for deleting a blog
   const deleteBlogMutation = useMutation({
     mutationFn: async (blogId) => {
-      await axios.delete(`${API_BASE_URL}/blogs/${blogId}`);
+      const token = localStorage.getItem('token');
+      await axios.delete(`${API_BASE_URL}/blogs/${blogId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
     },
     onSuccess: () => {
       setActionMessage('Blog deleted successfully!');
@@ -71,7 +127,13 @@ function ManageBlogPosts() {
   // Mutation for changing blog status
   const changeStatusMutation = useMutation({
     mutationFn: async ({ blogId, status }) => {
-      const response = await axios.patch(`${API_BASE_URL}/blogs/${blogId}/status`, { status });
+      const token = localStorage.getItem('token');
+      const response = await axios.patch(`${API_BASE_URL}/blogs/${blogId}/status`, { status }, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
       return response.data;
     },
     onSuccess: () => {
@@ -215,8 +277,73 @@ function ManageBlogPosts() {
           </div>
         )}
 
+        {/* Search and Filter Section */}
+        {blogPosts && blogPosts.length > 0 && (
+          <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Search Input */}
+              <div>
+                <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-2">
+                  Search
+                </label>
+                <input
+                  type="text"
+                  id="search"
+                  placeholder="Search by title or description..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              {/* Status Filter */}
+              <div>
+                <label htmlFor="filterStatus" className="block text-sm font-medium text-gray-700 mb-2">
+                  Filter by Status
+                </label>
+                <select
+                  id="filterStatus"
+                  value={filterStatus}
+                  onChange={(e) => setFilterStatus(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                >
+                  <option value="">All Statuses</option>
+                  <option value="published">Published</option>
+                  <option value="draft">Draft</option>
+                </select>
+              </div>
+
+              {/* Category Filter */}
+              <div>
+                <label htmlFor="filterCategory" className="block text-sm font-medium text-gray-700 mb-2">
+                  Filter by Category
+                </label>
+                <select
+                  id="filterCategory"
+                  value={filterCategory}
+                  onChange={(e) => setFilterCategory(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                >
+                  <option value="">All Categories</option>
+                  <option value="Shipment">Shipment</option>
+                  <option value="Air Freight">Air Freight</option>
+                  <option value="Cargo">Cargo</option>
+                  <option value="Events">Events</option>
+                  <option value="Testimony">Testimony</option>
+                </select>
+              </div>
+            </div>
+            {filteredBlogs.length > 0 && (
+              <p className="text-sm text-gray-600 mt-3">
+                Showing <span className="font-semibold">{startIndex + 1}</span> to <span className="font-semibold">{Math.min(endIndex, filteredBlogs.length)}</span> of <span className="font-semibold">{filteredBlogs.length}</span> results
+              </p>
+            )}
+          </div>
+        )}
+
         {blogPosts && blogPosts.length > 0 ? (
-          <div className="overflow-x-auto bg-white rounded-xl shadow-lg p-6">
+          <>
+            <div className="overflow-x-auto bg-white rounded-xl shadow-lg p-6">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
@@ -241,7 +368,8 @@ function ManageBlogPosts() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {blogPosts.map((blog) => (
+                {paginatedBlogs.length > 0 ? (
+                  paginatedBlogs.map((blog) => (
                   <React.Fragment key={blog._id}>
                     <tr>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
@@ -353,10 +481,55 @@ function ManageBlogPosts() {
                       </tr>
                     )}
                   </React.Fragment>
-                ))}
+                ))
+                ) : (
+                  <tr>
+                    <td colSpan="6" className="px-6 py-8 text-center text-gray-600">
+                      No blog posts match your search or filter criteria.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
-          </div>
+            </div>
+
+            {/* Pagination Controls */}
+            {filteredBlogs.length > itemsPerPage && (
+              <div className="flex items-center justify-between bg-white rounded-xl shadow-lg p-6 mt-6">
+                <button
+                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                  disabled={currentPage === 1}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition duration-200"
+                >
+                  Previous
+                </button>
+
+                <div className="flex items-center space-x-2">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`px-3 py-2 rounded-lg transition duration-200 ${
+                        page === currentPage
+                          ? 'bg-blue-600 text-white font-semibold'
+                          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                  disabled={currentPage === totalPages}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition duration-200"
+                >
+                  Next
+                </button>
+              </div>
+            )}
+          </>
         ) : (
           <p className="text-center text-gray-600">No blog posts to manage.</p>
         )}

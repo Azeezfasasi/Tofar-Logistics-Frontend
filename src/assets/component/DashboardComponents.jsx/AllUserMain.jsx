@@ -9,6 +9,13 @@ function AllUserMain() {
   const queryClient = useQueryClient();
   const { isAuthenticated, isAdmin, isEmployee, isLoading: authLoading } = useProfile();
 
+  // State for search, filter, and pagination
+  const [searchTerm, setSearchTerm] = useState('');
+  const [roleFilter, setRoleFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
   // State for editing mode
   const [editingUserId, setEditingUserId] = useState(null);
   const [editName, setEditName] = useState('');
@@ -89,7 +96,6 @@ function AllUserMain() {
   // Mutation for toggling user disabled status
   const toggleDisableUserMutation = useMutation({
     mutationFn: async ({ userIdToToggle, isDisabled }) => {
-      const endpoint = isDisabled ? 'disable' : 'enable';
       const response = await axios.put(`${API_BASE_URL}/profile/edit/${userIdToToggle}`, { isDisabled: !isDisabled });
       return response.data;
     },
@@ -181,6 +187,46 @@ function AllUserMain() {
     }
   };
 
+  // Filter users based on search term, role, and status
+  const filteredUsers = users?.filter((user) => {
+    const searchLower = searchTerm.toLowerCase();
+    const matchesSearch =
+      user.name?.toLowerCase().includes(searchLower) ||
+      user.email?.toLowerCase().includes(searchLower);
+
+    const matchesRole = !roleFilter || user.role === roleFilter;
+
+    const matchesStatus =
+      !statusFilter ||
+      (statusFilter === 'active' && !user.isDisabled && !user.isSuspended) ||
+      (statusFilter === 'disabled' && user.isDisabled) ||
+      (statusFilter === 'suspended' && user.isSuspended);
+
+    return matchesSearch && matchesRole && matchesStatus;
+  }) || [];
+
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedUsers = filteredUsers.slice(startIndex, endIndex);
+
+  // Reset to page 1 when filters change
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+    setCurrentPage(1);
+  };
+
+  const handleRoleFilterChange = (e) => {
+    setRoleFilter(e.target.value);
+    setCurrentPage(1);
+  };
+
+  const handleStatusFilterChange = (e) => {
+    setStatusFilter(e.target.value);
+    setCurrentPage(1);
+  };
+
   // Render loading state for authentication check
   if (authLoading) {
     return (
@@ -254,208 +300,299 @@ function AllUserMain() {
           </div>
         )}
 
+        {/* Search and Filter Section */}
+        <div className="mb-6 space-y-4 bg-white p-4 rounded-lg shadow">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Search</label>
+              <input
+                type="text"
+                placeholder="Search by name or email..."
+                value={searchTerm}
+                onChange={handleSearchChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Filter by Role</label>
+              <select
+                value={roleFilter}
+                onChange={handleRoleFilterChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+              >
+                <option value="">All Roles</option>
+                <option value="admin">Admin</option>
+                <option value="client">Client</option>
+                <option value="agent">Agent</option>
+                <option value="employee">Employee</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Filter by Status</label>
+              <select
+                value={statusFilter}
+                onChange={handleStatusFilterChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+              >
+                <option value="">All Status</option>
+                <option value="active">Active</option>
+                <option value="disabled">Disabled</option>
+                <option value="suspended">Suspended</option>
+              </select>
+            </div>
+          </div>
+          <p className="text-sm text-gray-600">
+            Found {filteredUsers.length} user{filteredUsers.length !== 1 ? 's' : ''}
+          </p>
+        </div>
+
         {users && users.length > 0 ? (
-          <div className="overflow-x-auto bg-white rounded-xl shadow-lg p-6">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Name
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Email
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Role
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {users.map((user) => (
-                  <React.Fragment key={user._id}>
-                    <tr>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {editingUserId === user._id ? (
-                          <input
-                            type="text"
-                            value={editName}
-                            onChange={(e) => setEditName(e.target.value)}
-                            className="w-full p-1 border rounded"
-                          />
-                        ) : (
-                          user.name
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                        {editingUserId === user._id ? (
-                          <input
-                            type="email"
-                            value={editEmail}
-                            onChange={(e) => setEditEmail(e.target.value)}
-                            className="w-full p-1 border rounded"
-                          />
-                        ) : (
-                          user.email
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                        {editingUserId === user._id ? (
-                          <select
-                            value={editRole}
-                            onChange={(e) => setEditRole(e.target.value)}
-                            className="w-full p-1 border rounded bg-white"
-                          >
-                            <option value="admin">Admin</option>
-                            <option value="client">Client</option>
-                            <option value="agent">Agent</option>
-                            <option value="employee">Employee</option>
-                          </select>
-                        ) : (
-                          user.role
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full capitalize ${
-                          user.isDisabled ? 'bg-red-100 text-red-800' :
-                          user.isSuspended ? 'bg-orange-100 text-orange-800' :
-                          'bg-green-100 text-green-800'
-                        }`}>
-                          {user.isDisabled ? 'Disabled' : user.isSuspended ? 'Suspended' : 'Active'}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        {editingUserId === user._id ? (
-                          <div className="flex justify-end space-x-2">
-                            <button
-                              onClick={handleSaveEdit}
-                              className="text-blue-600 hover:text-blue-900 disabled:opacity-50 cursor-pointer"
-                              disabled={editUserMutation.isPending}
-                            >
-                              {editUserMutation.isPending ? 'Saving...' : 'Save'}
-                            </button>
-                            <button
-                              onClick={() => setEditingUserId(null)}
-                              className="text-gray-600 hover:text-gray-900 cursor-pointer"
-                              disabled={editUserMutation.isPending}
-                            >
-                              Cancel
-                            </button>
-                          </div>
-                        ) : (
-                          <div className="flex justify-end space-x-2">
-                            <button
-                              onClick={() => handleEditClick(user)}
-                              className="text-indigo-600 hover:text-indigo-900 cursor-pointer"
-                            >
-                              Edit
-                            </button>
-                            <button
-                              onClick={() => handleDeleteClick(user._id)}
-                              className="text-red-600 hover:text-red-900 disabled:opacity-50 cursor-pointer"
-                              disabled={deleteUserMutation.isPending}
-                            >
-                              Delete
-                            </button>
-                            <button
-                              onClick={() => handleToggleDisable(user._id, user.isDisabled)}
-                              className={`text-sm px-2 py-1 rounded-md cursor-pointer ${
-                                user.isDisabled ? 'bg-blue-500 text-white hover:bg-blue-600' : 'bg-red-500 text-white hover:bg-red-600'
-                              } disabled:opacity-50`}
-                              disabled={toggleDisableUserMutation.isPending}
-                            >
-                              {user.isDisabled ? 'Enable' : 'Disable'}
-                            </button>
-                            <button
-                              onClick={() => handleToggleSuspend(user._id, user.isSuspended)}
-                              className={`text-sm px-2 py-1 rounded-md cursor-pointer ${
-                                user.isSuspended ? 'bg-blue-500 text-white hover:bg-blue-600' : 'bg-orange-500 text-white hover:bg-orange-600'
-                              } disabled:opacity-50`}
-                              disabled={toggleSuspendUserMutation.isPending}
-                            >
-                              {user.isSuspended ? 'Unsuspend' : 'Suspend'}
-                            </button>
-                          </div>
-                        )}
-                      </td>
-                    </tr>
-                    {editingUserId === user._id && (
+          <div>
+            <div className="overflow-x-auto bg-white rounded-xl shadow-lg p-6 mb-6">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Name
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Email
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Role
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {paginatedUsers.map((user) => (
+                    <React.Fragment key={user._id}>
                       <tr>
-                        <td colSpan="5" className="px-6 py-4 text-sm text-gray-700 bg-gray-50">
-                          <div className="space-y-4">
-                            <div>
-                              <label htmlFor="editGender" className="block text-sm font-medium text-gray-700 mb-1">
-                                Gender
-                              </label>
-                              <input
-                                type="text"
-                                id="editGender"
-                                value={editGender}
-                                onChange={(e) => setEditGender(e.target.value)}
-                                className="w-full p-2 border rounded"
-                              />
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {editingUserId === user._id ? (
+                            <input
+                              type="text"
+                              value={editName}
+                              onChange={(e) => setEditName(e.target.value)}
+                              className="w-full p-1 border rounded"
+                            />
+                          ) : (
+                            user.name
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                          {editingUserId === user._id ? (
+                            <input
+                              type="email"
+                              value={editEmail}
+                              onChange={(e) => setEditEmail(e.target.value)}
+                              className="w-full p-1 border rounded"
+                            />
+                          ) : (
+                            user.email
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                          {editingUserId === user._id ? (
+                            <select
+                              value={editRole}
+                              onChange={(e) => setEditRole(e.target.value)}
+                              className="w-full p-1 border rounded bg-white"
+                            >
+                              <option value="admin">Admin</option>
+                              <option value="client">Client</option>
+                              <option value="agent">Agent</option>
+                              <option value="employee">Employee</option>
+                            </select>
+                          ) : (
+                            user.role
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm">
+                          <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full capitalize ${
+                            user.isDisabled ? 'bg-red-100 text-red-800' :
+                            user.isSuspended ? 'bg-orange-100 text-orange-800' :
+                            'bg-green-100 text-green-800'
+                          }`}>
+                            {user.isDisabled ? 'Disabled' : user.isSuspended ? 'Suspended' : 'Active'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          {editingUserId === user._id ? (
+                            <div className="flex justify-end space-x-2">
+                              <button
+                                onClick={handleSaveEdit}
+                                className="text-blue-600 hover:text-blue-900 disabled:opacity-50 cursor-pointer"
+                                disabled={editUserMutation.isPending}
+                              >
+                                {editUserMutation.isPending ? 'Saving...' : 'Save'}
+                              </button>
+                              <button
+                                onClick={() => setEditingUserId(null)}
+                                className="text-gray-600 hover:text-gray-900 cursor-pointer"
+                                disabled={editUserMutation.isPending}
+                              >
+                                Cancel
+                              </button>
                             </div>
-                            <div>
-                              <label htmlFor="editPhoneNumber" className="block text-sm font-medium text-gray-700 mb-1">
-                                Phone Number
-                              </label>
-                              <input
-                                type="text"
-                                id="editPhoneNumber"
-                                value={editPhoneNumber}
-                                onChange={(e) => setEditPhoneNumber(e.target.value)}
-                                className="w-full p-2 border rounded"
-                              />
+                          ) : (
+                            <div className="flex justify-end space-x-2">
+                              <button
+                                onClick={() => handleEditClick(user)}
+                                className="text-indigo-600 hover:text-indigo-900 cursor-pointer"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => handleDeleteClick(user._id)}
+                                className="text-red-600 hover:text-red-900 disabled:opacity-50 cursor-pointer"
+                                disabled={deleteUserMutation.isPending}
+                              >
+                                Delete
+                              </button>
+                              <button
+                                onClick={() => handleToggleDisable(user._id, user.isDisabled)}
+                                className={`text-sm px-2 py-1 rounded-md cursor-pointer ${
+                                  user.isDisabled ? 'bg-blue-500 text-white hover:bg-blue-600' : 'bg-red-500 text-white hover:bg-red-600'
+                                } disabled:opacity-50`}
+                                disabled={toggleDisableUserMutation.isPending}
+                              >
+                                {user.isDisabled ? 'Enable' : 'Disable'}
+                              </button>
+                              <button
+                                onClick={() => handleToggleSuspend(user._id, user.isSuspended)}
+                                className={`text-sm px-2 py-1 rounded-md cursor-pointer ${
+                                  user.isSuspended ? 'bg-blue-500 text-white hover:bg-blue-600' : 'bg-orange-500 text-white hover:bg-orange-600'
+                                } disabled:opacity-50`}
+                                disabled={toggleSuspendUserMutation.isPending}
+                              >
+                                {user.isSuspended ? 'Unsuspend' : 'Suspend'}
+                              </button>
                             </div>
-                            <div>
-                              <label htmlFor="editHomeAddress" className="block text-sm font-medium text-gray-700 mb-1">
-                                Home Address
-                              </label>
-                              <input
-                                type="text"
-                                id="editHomeAddress"
-                                value={editHomeAddress}
-                                onChange={(e) => setEditHomeAddress(e.target.value)}
-                                className="w-full p-2 border rounded"
-                              />
-                            </div>
-                            <div>
-                              <label htmlFor="editCountry" className="block text-sm font-medium text-gray-700 mb-1">
-                                Country
-                              </label>
-                              <input
-                                type="text"
-                                id="editCountry"
-                                value={editCountry}
-                                onChange={(e) => setEditCountry(e.target.value)}
-                                className="w-full p-2 border rounded"
-                              />
-                            </div>
-                            <div>
-                              <label htmlFor="editState" className="block text-sm font-medium text-gray-700 mb-1">
-                                State
-                              </label>
-                              <input
-                                type="text"
-                                id="editState"
-                                value={editState}
-                                onChange={(e) => setEditState(e.target.value)}
-                                className="w-full p-2 border rounded"
-                              />
-                            </div>
-                          </div>
+                          )}
                         </td>
                       </tr>
-                    )}
-                  </React.Fragment>
-                ))}
-              </tbody>
-            </table>
+                      {editingUserId === user._id && (
+                        <tr>
+                          <td colSpan="5" className="px-6 py-4 text-sm text-gray-700 bg-gray-50">
+                            <div className="space-y-4">
+                              <div>
+                                <label htmlFor="editGender" className="block text-sm font-medium text-gray-700 mb-1">
+                                  Gender
+                                </label>
+                                <input
+                                  type="text"
+                                  id="editGender"
+                                  value={editGender}
+                                  onChange={(e) => setEditGender(e.target.value)}
+                                  className="w-full p-2 border rounded"
+                                />
+                              </div>
+                              <div>
+                                <label htmlFor="editPhoneNumber" className="block text-sm font-medium text-gray-700 mb-1">
+                                  Phone Number
+                                </label>
+                                <input
+                                  type="text"
+                                  id="editPhoneNumber"
+                                  value={editPhoneNumber}
+                                  onChange={(e) => setEditPhoneNumber(e.target.value)}
+                                  className="w-full p-2 border rounded"
+                                />
+                              </div>
+                              <div>
+                                <label htmlFor="editHomeAddress" className="block text-sm font-medium text-gray-700 mb-1">
+                                  Home Address
+                                </label>
+                                <input
+                                  type="text"
+                                  id="editHomeAddress"
+                                  value={editHomeAddress}
+                                  onChange={(e) => setEditHomeAddress(e.target.value)}
+                                  className="w-full p-2 border rounded"
+                                />
+                              </div>
+                              <div>
+                                <label htmlFor="editCountry" className="block text-sm font-medium text-gray-700 mb-1">
+                                  Country
+                                </label>
+                                <input
+                                  type="text"
+                                  id="editCountry"
+                                  value={editCountry}
+                                  onChange={(e) => setEditCountry(e.target.value)}
+                                  className="w-full p-2 border rounded"
+                                />
+                              </div>
+                              <div>
+                                <label htmlFor="editState" className="block text-sm font-medium text-gray-700 mb-1">
+                                  State
+                                </label>
+                                <input
+                                  type="text"
+                                  id="editState"
+                                  value={editState}
+                                  onChange={(e) => setEditState(e.target.value)}
+                                  className="w-full p-2 border rounded"
+                                />
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination Controls */}
+            {filteredUsers.length > itemsPerPage && (
+              <div className="flex items-center justify-between bg-white rounded-xl shadow p-4">
+                <div className="text-sm text-gray-600">
+                  Showing {startIndex + 1} to {Math.min(endIndex, filteredUsers.length)} of {filteredUsers.length}
+                </div>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                    className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                  >
+                    Previous
+                  </button>
+                  
+                  {/* Page numbers */}
+                  <div className="flex space-x-1">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                      <button
+                        key={page}
+                        onClick={() => setCurrentPage(page)}
+                        className={`px-3 py-2 rounded-lg transition ${
+                          currentPage === page
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    ))}
+                  </div>
+
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                    className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           <p className="text-center text-gray-600">No users to manage.</p>

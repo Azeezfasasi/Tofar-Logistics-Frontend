@@ -16,6 +16,11 @@ function NewsletterSubscribersMain() {
   const queryClient = useQueryClient();
   const { isAuthenticated, isAdmin, isEmployee, isLoading: authLoading } = useProfile();
 
+  // State for search and pagination
+  const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
   // State for editing mode
   const [editingSubscriberId, setEditingSubscriberId] = useState(null);
   const [editName, setEditName] = useState('');
@@ -179,6 +184,27 @@ function NewsletterSubscribersMain() {
     });
   };
 
+  // Filter subscribers based on search term
+  const filteredSubscribers = subscribers?.filter((subscriber) => {
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      subscriber.name?.toLowerCase().includes(searchLower) ||
+      subscriber.email?.toLowerCase().includes(searchLower)
+    );
+  }) || [];
+
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredSubscribers.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedSubscribers = filteredSubscribers.slice(startIndex, endIndex);
+
+  // Reset to page 1 when search term changes
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+    setCurrentPage(1);
+  };
+
   // Render loading state for authentication check
   if (authLoading) {
     return (
@@ -254,123 +280,182 @@ function NewsletterSubscribersMain() {
           </div>
         )}
 
+        {/* Search Bar */}
+        <div className="mb-6">
+          <input
+            type="text"
+            placeholder="Search by name or email..."
+            value={searchTerm}
+            onChange={handleSearchChange}
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+          />
+          <p className="text-sm text-gray-600 mt-2">
+            Found {filteredSubscribers.length} subscriber{filteredSubscribers.length !== 1 ? 's' : ''}
+          </p>
+        </div>
+
         {subscribers && subscribers.length > 0 ? (
-          <div className="overflow-x-auto bg-white rounded-xl shadow-lg p-6">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Name
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Email
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Subscribed
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Joined
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {subscribers.map((subscriber) => (
-                  <React.Fragment key={subscriber._id}>
-                    <tr>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {editingSubscriberId === subscriber._id ? (
-                          <input
-                            type="text"
-                            value={editName}
-                            onChange={(e) => setEditName(e.target.value)}
-                            className="w-full p-1 border rounded"
-                          />
-                        ) : (
-                          subscriber.name || 'N/A'
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                        {editingSubscriberId === subscriber._id ? (
-                          <input
-                            type="email"
-                            value={editEmail}
-                            onChange={(e) => setEditEmail(e.target.value)}
-                            className="w-full p-1 border rounded"
-                          />
-                        ) : (
-                          subscriber.email
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        {editingSubscriberId === subscriber._id ? (
-                          <input
-                            type="checkbox"
-                            checked={editIsSubscribed}
-                            onChange={(e) => setEditIsSubscribed(e.target.checked)}
-                            className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                          />
-                        ) : (
-                          <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                            subscriber.isSubscribed ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'
-                          }`}>
-                            {subscriber.isSubscribed ? 'Yes' : 'No'}
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                        {formatTimestamp(subscriber.createdAt)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        {editingSubscriberId === subscriber._id ? (
-                          <div className="flex justify-end space-x-2">
-                            <button
-                              onClick={handleSaveEdit}
-                              className="text-blue-600 hover:text-blue-900 disabled:opacity-50"
-                              disabled={editSubscriberMutation.isPending}
-                            >
-                              {editSubscriberMutation.isPending ? 'Saving...' : 'Save'}
-                            </button>
-                            <button
-                              onClick={() => setEditingSubscriberId(null)}
-                              className="text-gray-600 hover:text-gray-900"
-                              disabled={editSubscriberMutation.isPending}
-                            >
-                              Cancel
-                            </button>
-                          </div>
-                        ) : (
-                          <div className="flex justify-end space-x-2">
-                            <button
-                              onClick={() => handleEditClick(subscriber)}
-                              className="text-indigo-600 hover:text-indigo-900"
-                            >
-                              Edit
-                            </button>
-                            <button
-                              onClick={() => handleDeleteClick(subscriber._id)}
-                              className="text-red-600 hover:text-red-900 disabled:opacity-50"
-                              disabled={deleteSubscriberMutation.isPending}
-                            >
-                              Delete
-                            </button>
-                            <button
-                              onClick={() => handleSendEmailClick(subscriber.email, subscriber._id)}
-                              className="text-purple-600 hover:text-purple-900 disabled:opacity-50"
-                              disabled={!subscriber.isSubscribed} // Only send if subscribed
-                            >
-                              Send Email
-                            </button>
-                          </div>
-                        )}
-                      </td>
-                    </tr>
-                  </React.Fragment>
-                ))}
-              </tbody>
-            </table>
+          <div>
+            <div className="overflow-x-auto bg-white rounded-xl shadow-lg p-6 mb-6">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Name
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Email
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Subscribed
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Joined
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {paginatedSubscribers.map((subscriber) => (
+                    <React.Fragment key={subscriber._id}>
+                      <tr>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {editingSubscriberId === subscriber._id ? (
+                            <input
+                              type="text"
+                              value={editName}
+                              onChange={(e) => setEditName(e.target.value)}
+                              className="w-full p-1 border rounded"
+                            />
+                          ) : (
+                            subscriber.name || 'N/A'
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                          {editingSubscriberId === subscriber._id ? (
+                            <input
+                              type="email"
+                              value={editEmail}
+                              onChange={(e) => setEditEmail(e.target.value)}
+                              className="w-full p-1 border rounded"
+                            />
+                          ) : (
+                            subscriber.email
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm">
+                          {editingSubscriberId === subscriber._id ? (
+                            <input
+                              type="checkbox"
+                              checked={editIsSubscribed}
+                              onChange={(e) => setEditIsSubscribed(e.target.checked)}
+                              className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                            />
+                          ) : (
+                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                              subscriber.isSubscribed ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'
+                            }`}>
+                              {subscriber.isSubscribed ? 'Yes' : 'No'}
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                          {formatTimestamp(subscriber.createdAt)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          {editingSubscriberId === subscriber._id ? (
+                            <div className="flex justify-end space-x-2">
+                              <button
+                                onClick={handleSaveEdit}
+                                className="text-blue-600 hover:text-blue-900 disabled:opacity-50"
+                                disabled={editSubscriberMutation.isPending}
+                              >
+                                {editSubscriberMutation.isPending ? 'Saving...' : 'Save'}
+                              </button>
+                              <button
+                                onClick={() => setEditingSubscriberId(null)}
+                                className="text-gray-600 hover:text-gray-900"
+                                disabled={editSubscriberMutation.isPending}
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="flex justify-end space-x-2">
+                              <button
+                                onClick={() => handleEditClick(subscriber)}
+                                className="text-indigo-600 hover:text-indigo-900"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => handleDeleteClick(subscriber._id)}
+                                className="text-red-600 hover:text-red-900 disabled:opacity-50"
+                                disabled={deleteSubscriberMutation.isPending}
+                              >
+                                Delete
+                              </button>
+                              <button
+                                onClick={() => handleSendEmailClick(subscriber.email, subscriber._id)}
+                                className="text-purple-600 hover:text-purple-900 disabled:opacity-50"
+                                disabled={!subscriber.isSubscribed} // Only send if subscribed
+                              >
+                                Send Email
+                              </button>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    </React.Fragment>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination Controls */}
+            {filteredSubscribers.length > itemsPerPage && (
+              <div className="flex flex-col md:flex-row gap-3 md:gap-0 items-center justify-between bg-white rounded-xl shadow p-4">
+                <div className="text-sm text-gray-600">
+                  Showing {startIndex + 1} to {Math.min(endIndex, filteredSubscribers.length)} of {filteredSubscribers.length}
+                </div>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                    className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                  >
+                    Previous
+                  </button>
+                  
+                  {/* Page numbers */}
+                  <div className="flex space-x-1">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                      <button
+                        key={page}
+                        onClick={() => setCurrentPage(page)}
+                        className={`px-3 py-2 rounded-lg transition ${
+                          currentPage === page
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    ))}
+                  </div>
+
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                    className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           <p className="text-center text-gray-600">No subscribers to manage.</p>

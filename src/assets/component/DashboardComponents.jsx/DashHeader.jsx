@@ -91,11 +91,19 @@ function DashHeader() {
         {/* Icons for Desktop (User, Wishlist, Cart) */}
         <div className="hidden lg:flex items-center space-x-4" ref={menuRef}>
             <Link to="/app/dashboard" className="hover:text-orange-400 transition-colors flex flex-row justify-start items-center gap-2 duration-300 cursor-pointer">
-                <img 
-                src={account} 
-                alt={account} 
-                className='w-7 h-7 text-blue-500' 
-                />
+                {currentUser?.profileImageUrl ? (
+                  <img 
+                    src={currentUser.profileImageUrl} 
+                    alt={currentUser.name}
+                    className='w-10 h-10 rounded-full object-cover border-2 border-white' 
+                  />
+                ) : (
+                  <img 
+                    src={account} 
+                    alt="account" 
+                    className='w-7 h-7 text-blue-500' 
+                  />
+                )}
                 <div className='mr-4 flex flex-col items-start justify-center'>
                     <div className='text-[14px]'>{currentUser?.name}</div>
                     <div className='text-[12px] capitalize'>{currentUser?.role}</div>
@@ -107,11 +115,19 @@ function DashHeader() {
         <div className="lg:hidden flex items-center" ref={menuRef}>
           {/* Mobile Icons (User, Cart) */}
           <Link to="/app/dashboard" className="hover:text-orange-400 transition-colors flex flex-row justify-start items-center gap-1 duration-300 mr-0">
-            <img 
-            src={account} 
-            alt={account} 
-            className='w-7 h-7 text-blue-500' 
-            />
+            {currentUser?.profileImageUrl ? (
+              <img 
+                src={currentUser.profileImageUrl} 
+                alt={currentUser.name}
+                className='w-8 h-8 md:w-10 md:h-10 rounded-full object-cover border-2 border-white' 
+              />
+            ) : (
+              <img 
+                src={account} 
+                alt="account" 
+                className='w-7 h-7 text-blue-500' 
+              />
+            )}
             <div className='mr-4 flex flex-col items-start justify-center'>
                 <div className='text-[11px] md:text-[14px]'>{currentUser?.name}</div>
                 <div className='text-[11px] capitalize'>{currentUser?.role}</div>
