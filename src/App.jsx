@@ -3,6 +3,7 @@ import './App.css';
 import Home from "./app/Home"
 import Login from "./Login"
 import ForgetPassword from "./ForgetPassword"
+import ResetPassword from "./ResetPassword"
 import Donate from "./app/Donate"
 import About from "./app/About"
 import Blog from "./app/Blog"
@@ -75,6 +76,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgetpassword" element={<ForgetPassword />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
           <Route path="/app/donate" element={<Donate />} />
           <Route path="/app/about" element={<About />} />
           <Route path="/app/blog" element={<Blog />} />
