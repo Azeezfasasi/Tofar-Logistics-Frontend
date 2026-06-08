@@ -14,8 +14,8 @@ function ForgetPasswordMain() {
   // Effect to clear messages when email input changes or component mounts
   useEffect(() => {
     setLocalError('');
-    setSuccessMessage('');
-    clearError(); // Clear context error as well when email changes
+    clearError(); // Clear context error when email changes
+    // Don't clear success message here - let user see it
   }, [email, clearError]);
 
   // React Query useMutation hook for the forgot password process
@@ -23,16 +23,10 @@ function ForgetPasswordMain() {
     mutationFn: forgotPassword, // The actual async function to call from ProfileContext
     onSuccess: (data) => {
       // This callback runs when the 'forgotPassword' function resolves successfully.
-      if (data.success) {
-        setSuccessMessage(data.message || 'If an account with that email exists, a password reset link has been sent to your inbox.');
-        setLocalError(''); // Explicitly clear any local errors on success
-        clearError(); // Explicitly clear any context errors on success
-        setEmail(''); // Clear the email field after successful submission
-      } else {
-        // This case should ideally be caught by onError, but as a fallback
-        setLocalError(data.error || 'Failed to send reset email due to an unexpected response.');
-        setSuccessMessage(''); // Clear success message if this fallback error occurs
-      }
+      // Backend returns { message: 'Password reset email sent' }
+      setSuccessMessage(data.message || 'If an account with that email exists, a password reset link has been sent to your inbox.');
+      setLocalError(''); // Explicitly clear any local errors on success
+      clearError(); // Explicitly clear any context errors on success
     },
     onError: (err) => {
       // This callback runs when the 'forgotPassword' function rejects (e.g., network error, 4xx/5xx status)
@@ -96,7 +90,10 @@ function ForgetPasswordMain() {
               id="email"
               name="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (successMessage) setSuccessMessage(''); // Clear success message when user types new email
+              }}
               placeholder="you@example.com"
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder-gray-400 transition duration-200"
               required
