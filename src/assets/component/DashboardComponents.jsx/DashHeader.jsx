@@ -1,5 +1,5 @@
-import React, { useState, useRef } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import React, { useState, useRef, useEffect } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import account from '../../images/account.svg';
 import { useProfile } from '../../context-api/ProfileContext';
 import { Sidenav, Nav } from 'rsuite';
@@ -17,18 +17,46 @@ import DetailIcon from '@rsuite/icons/Detail';
 import OffRoundIcon from '@rsuite/icons/OffRound';
 import LogoutButton from './LogoutButton';
 import tofar from '../../images/tofar.png';
+import { Ship, UserPen, ClipboardPlus   } from 'lucide-react';
 
 
 function DashHeader() {
   const {currentUser, isAdmin, isAgent, isEmployee, isClient} = useProfile();
   const [isOpen, setIsOpen] = useState(false);
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const location = useLocation();
-  // const [openDropdown, setOpenDropdown] = useState(false);
+  const navigate = useNavigate();
   const menuRef = useRef();
+  const profileDropdownRef = useRef();
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);
   };
+
+  const toggleProfileDropdown = () => {
+    setIsProfileDropdownOpen(prev => !prev);
+  };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target)) {
+        setIsProfileDropdownOpen(false);
+      }
+    };
+
+    if (isProfileDropdownOpen) {
+      // Add a small delay to prevent immediate closure
+      const timer = setTimeout(() => {
+        document.addEventListener('mousedown', handleClickOutside);
+      }, 0);
+      
+      return () => {
+        clearTimeout(timer);
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }
+  }, [isProfileDropdownOpen]);
 
   // Map route paths to eventKeys
   const menuKeyByPath = {
@@ -77,8 +105,8 @@ function DashHeader() {
     }
 
   return (
-    <nav className="bg-gray-500 text-white px-3 font-inter sticky top-0 z-50">
-      <div className="container mx-auto flex justify-between items-center relative py-2">
+    <nav className="bg-gray-500 text-white px-3 font-inter sticky top-0 z-50 overflow-visible">
+      <div className="container mx-auto flex justify-between items-center relative py-2 overflow-visible">
         {/* Logo */}
         <Link to="/" className="flex items-center bg-gray-100 p-1 rounded-md">
           <img
@@ -89,8 +117,18 @@ function DashHeader() {
         </Link>
 
         {/* Icons for Desktop (User, Wishlist, Cart) */}
-        <div className="hidden lg:flex items-center space-x-4" ref={menuRef}>
-            <Link to="/app/dashboard" className="hover:text-orange-400 transition-colors flex flex-row justify-start items-center gap-2 duration-300 cursor-pointer">
+        <div className="hidden lg:flex items-center space-x-4 relative" ref={menuRef}>
+            {/* Desktop Profile Dropdown */}
+            <div className="relative z-40" ref={profileDropdownRef}>
+              <button 
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  toggleProfileDropdown();
+                }}
+                type="button"
+                className="hover:text-orange-400 transition-colors flex flex-row justify-start items-center gap-2 duration-300 cursor-pointer p-2 rounded"
+              >
                 {currentUser?.profileImageUrl ? (
                   <img 
                     src={currentUser.profileImageUrl} 
@@ -104,37 +142,133 @@ function DashHeader() {
                     className='w-7 h-7 text-blue-500' 
                   />
                 )}
-                <div className='mr-4 flex flex-col items-start justify-center'>
+                <div className='mr-2 flex flex-col items-start justify-center'>
                     <div className='text-[14px]'>{currentUser?.name}</div>
                     <div className='text-[12px] capitalize'>{currentUser?.role}</div>
                 </div>
-            </Link>
+                <svg className={`w-4 h-4 transition-transform duration-300 ${isProfileDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+                </svg>
+              </button>
+
+              {/* Desktop Dropdown Menu */}
+              {isProfileDropdownOpen && (
+                <div 
+                  className="fixed top-22 right-2 w-56 bg-white text-gray-900 rounded-lg shadow-2xl py-2 z-[100] border border-gray-200" 
+                  style={{ pointerEvents: 'auto' }}
+                  onMouseDown={(e) => e.stopPropagation()}
+                >
+                  <button 
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setIsProfileDropdownOpen(false);
+                      navigate('/app/account/allshipments');
+                    }}
+                    className="w-full text-left px-4 py-3 hover:bg-gray-100 transition-colors text-sm font-medium text-gray-900 bg-white border-none cursor-pointer flex items-center gap-1"
+                  >
+                    <Ship className='w-4 h-4' /> Manage Shipments
+                  </button>
+                  <button 
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setIsProfileDropdownOpen(false);
+                      navigate('/app/account/createshipment');
+                    }}
+                    className="w-full text-left px-4 py-3 hover:bg-gray-100 transition-colors text-sm font-medium text-gray-900 bg-white border-none cursor-pointer flex items-center gap-1"
+                  >
+                    <ClipboardPlus className='w-4 h-4' /> Create Shipment
+                  </button>
+                  <button 
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setIsProfileDropdownOpen(false);
+                      navigate('/app/account/profile');
+                    }}
+                    className="w-full text-left px-4 py-3 hover:bg-gray-100 transition-colors text-sm font-medium text-gray-900 bg-white border-none cursor-pointer flex items-center gap-1"
+                  >
+                    <UserPen className='w-4 h-4' /> Profile
+                  </button>
+                  <div className="border-t border-gray-200 my-2"></div>
+                  <div onClick={() => setIsProfileDropdownOpen(false)} className="px-4 py-2">
+                    <LogoutButton />
+                  </div>
+                </div>
+              )}
+            </div>
         </div>
 
-        {/* Hamburger Menu for Mobile */}
-        <div className="lg:hidden flex items-center" ref={menuRef}>
-          {/* Mobile Icons (User, Cart) */}
-          <Link to="/app/dashboard" className="hover:text-orange-400 transition-colors flex flex-row justify-start items-center gap-1 duration-300 mr-0">
-            {currentUser?.profileImageUrl ? (
-              <img 
-                src={currentUser.profileImageUrl} 
-                alt={currentUser.name}
-                className='w-8 h-8 md:w-10 md:h-10 rounded-full object-cover border-2 border-white' 
-              />
-            ) : (
-              <img 
-                src={account} 
-                alt="account" 
-                className='w-7 h-7 text-blue-500' 
-              />
-            )}
-            <div className='mr-4 flex flex-col items-start justify-center'>
-                <div className='text-[11px] md:text-[14px]'>{currentUser?.name}</div>
-                <div className='text-[11px] capitalize'>{currentUser?.role}</div>
-            </div>
-          </Link>
-          
+        
+        <div className="lg:hidden flex items-center gap-4 relative" ref={menuRef}>
 
+          {/* profile image and name with dropdown */}
+          <div className="relative z-40" ref={profileDropdownRef}>
+            <button 
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleProfileDropdown();
+              }}
+              className="hover:text-orange-400 transition-colors flex flex-row justify-start items-center gap-1 duration-300 p-1 rounded hover:bg-gray-600"
+              type="button"
+            >
+              {currentUser?.profileImageUrl ? (
+                <img 
+                  src={currentUser.profileImageUrl} 
+                  alt={currentUser.name}
+                  className='w-8 h-8 md:w-10 md:h-10 rounded-full object-cover border-2 border-white' 
+                />
+              ) : (
+                <img 
+                  src={account} 
+                  alt="account" 
+                  className='w-7 h-7 text-blue-500' 
+                />
+              )}
+              <div className='flex flex-col items-start justify-center'>
+                  <div className='text-[11px] md:text-[14px]'>{currentUser?.name}</div>
+                  <div className='text-[11px] capitalize'>{currentUser?.role}</div>
+              </div>
+              <svg className={`w-4 h-4 transition-transform duration-300 ${isProfileDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+              </svg>
+            </button>
+
+            {/* Mobile Dropdown Menu */}
+            {isProfileDropdownOpen && (
+              <div className="fixed top-22 right-2 w-56 bg-white text-gray-900 rounded-lg shadow-2xl py-2 z-[100] border border-gray-200 animate-in fade-in zoom-in duration-200 pointer-events-auto" style={{ pointerEvents: 'auto' }}>
+                <Link 
+                  to="/app/account/allshipments" 
+                  onClick={() => setIsProfileDropdownOpen(false)}
+                  className="px-4 py-3 hover:bg-gray-100 transition-colors text-sm font-medium cursor-pointer no-underline text-gray-900 flex items-center gap-1"
+                  style={{ pointerEvents: 'auto', display: 'flex' }}
+                >
+                  <Ship className='w-4 h-4' /> Manage Shipments
+                </Link>
+                <Link 
+                  to="/app/account/createshipment" 
+                  onClick={() => setIsProfileDropdownOpen(false)}
+                  className="px-4 py-3 hover:bg-gray-100 transition-colors text-sm font-medium cursor-pointer no-underline text-gray-900 flex items-center gap-1"
+                  style={{ pointerEvents: 'auto', display: 'flex' }}
+                >
+                  <ClipboardPlus className='w-4 h-4' /> Create Shipment
+                </Link>
+                <Link 
+                  to="/app/account/profile" 
+                  onClick={() => setIsProfileDropdownOpen(false)}
+                  className="px-4 py-3 hover:bg-gray-100 transition-colors text-sm font-medium cursor-pointer no-underline text-gray-900 flex items-center gap-1"
+                  style={{ pointerEvents: 'auto', display: 'flex' }}
+                >
+                  <UserPen className='w-4 h-4' /> Profile
+                </Link>
+                <div className="border-t border-gray-200 my-2"></div>
+                <div onClick={() => setIsProfileDropdownOpen(false)} className="px-4 py-2 pointer-events-auto" style={{ pointerEvents: 'auto' }}>
+                  <LogoutButton />
+                </div>
+              </div>
+            )}
+          </div>
+
+            {/* Hamburger Menu for Mobile */}
           <button onClick={toggleMenu} className="focus:outline-none">
             <svg
               className="w-6 h-6"
