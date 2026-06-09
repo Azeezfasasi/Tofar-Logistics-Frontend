@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Create axios instance with default timeout
 export const axiosInstance = axios.create({
-  timeout: 30000, // 30 second timeout (Render.com cold start takes up to 50s on first request)
+  timeout: 45000, // 45 second timeout for iOS cold start on Render.com
 });
 
 // Request interceptor - add token to all requests
@@ -12,10 +12,25 @@ axiosInstance.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    
     // Set timeout if not already set
     if (!config.timeout) {
-      config.timeout = 30000;
+      config.timeout = 45000; // Increased for iOS
     }
+    
+    // Add cache-busting headers for iOS
+    config.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate';
+    config.headers['Pragma'] = 'no-cache';
+    config.headers['Expires'] = '0';
+    
+    // Create AbortController for proper timeout handling on iOS
+    if (!config.signal) {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), config.timeout);
+      config.signal = controller.signal;
+      config._timeoutId = timeoutId;
+    }
+    
     return config;
   },
   (error) => Promise.reject(error)
@@ -23,16 +38,27 @@ axiosInstance.interceptors.request.use(
 
 // Response interceptor - handle retries and errors
 axiosInstance.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Clear the timeout
+    if (response.config._timeoutId) {
+      clearTimeout(response.config._timeoutId);
+    }
+    return response;
+  },
   async (error) => {
     const config = error.config;
     
+    // Clear the timeout
+    if (config?._timeoutId) {
+      clearTimeout(config._timeoutId);
+    }
+    
     // Log the error for debugging
     if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
-      console.warn('🔴 Request timeout - iOS may have network issues', {
+      console.warn('🔴 Request timeout - possible iOS network issue', {
         url: config?.url,
         timeout: config?.timeout,
-        device: navigator.userAgent
+        userAgent: navigator.userAgent
       });
     }
     
@@ -51,11 +77,11 @@ axiosInstance.interceptors.response.use(
     if (error.response?.status >= 500 || error.code === 'ECONNABORTED' || !error.response) {
       config.retry += 1;
       
-      if (config.retry <= 2) { // Max 2 retries (3 total attempts)
-        console.log(`🔄 Retrying request (attempt ${config.retry + 1}/3): ${config.url}`);
+      if (config.retry <= 3) { // Max 3 retries (4 total attempts)
+        console.log(`🔄 Retrying request (attempt ${config.retry + 1}/4): ${config.url}`);
         
-        // Exponential backoff: 1s, 2s, 4s
-        const delay = Math.min(1000 * Math.pow(2, config.retry - 1), 5000);
+        // Exponential backoff: 2s, 4s, 8s (longer for iOS)
+        const delay = Math.min(2000 * Math.pow(2, config.retry - 1), 10000);
         await new Promise(resolve => setTimeout(resolve, delay));
         
         return axiosInstance(config);
