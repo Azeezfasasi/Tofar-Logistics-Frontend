@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
-import { FaSpinner, FaPlus, FaTrash, FaUser, FaBox, FaMapMarkerAlt, FaFileAlt, FaPhone, FaEnvelope, FaMapPin } from 'react-icons/fa'; 
+import { FaSpinner, FaPlus, FaTrash, FaUser, FaBox, FaMapMarkerAlt, FaFileAlt, FaPhone, FaEnvelope, FaMapPin, FaInfoCircle } from 'react-icons/fa'; 
 import { API_BASE_URL } from '../../../config/Api';
 
 const generateTrackingNumber = () => {
@@ -235,6 +235,23 @@ export default function CreateShipmentForm({ token }) {
           <p className="text-gray-600 ml-14 text-sm">Fill in the details to create and track your shipment</p>
         </div>
 
+        {/* Add mandator and optional specification */}
+        <div className="mb-8 p-5 bg-blue-50 border border-blue-100 rounded-xl flex items-start gap-3">
+          <div className="mt-0.5 text-blue-500 shrink-0">
+            <FaInfoCircle className="text-xl" />
+          </div>
+          <div className="space-y-1">
+            <p className="text-sm text-gray-700">
+              Fields marked with{" "}
+              <span className="text-red-500 font-semibold text-[16px]">*</span>{" "}
+              are required. All other fields are <span className='text-blue-600'>optional</span> but recommended for a smoother experience.
+            </p>
+            <p className="text-sm text-gray-500">
+              Providing complete information ensures accurate tracking and seamless delivery processing.
+            </p>
+          </div>
+        </div>
+
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Tracking Number - Highlighted Section */}
           <div className="bg-white rounded-xl shadow-lg p-6 border-2 border-blue-100">
@@ -331,7 +348,7 @@ export default function CreateShipmentForm({ token }) {
                 <div>
                   <label className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
                     <FaUser className="text-blue-600 text-xs" />
-                    Sender Name
+                    Sender Name <span className="text-red-600 text-[16px]">*</span>
                   </label>
                   <input
                     type="text"
@@ -345,7 +362,7 @@ export default function CreateShipmentForm({ token }) {
                 <div>
                   <label className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
                     <FaPhone className="text-blue-600 text-xs" />
-                    Phone Number
+                    Phone Number <span className="text-red-600 text-[16px]">*</span>
                   </label>
                   <input
                     type="text"
@@ -359,7 +376,7 @@ export default function CreateShipmentForm({ token }) {
                 <div>
                   <label className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
                     <FaEnvelope className="text-blue-600 text-xs" />
-                    Email Address
+                    Email Address <span className="text-gray-400 text-xs">(Auto-filled if email matches a user)</span> <span className="text-red-600 text-[16px]">*</span>
                   </label>
                   <input
                     type="email"
@@ -373,7 +390,7 @@ export default function CreateShipmentForm({ token }) {
                 <div>
                   <label className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
                     <FaMapPin className="text-blue-600 text-xs" />
-                    Address
+                    Address <span className="text-red-600 text-[16px]">*</span>
                   </label>
                   <input
                     type="text"
@@ -398,7 +415,7 @@ export default function CreateShipmentForm({ token }) {
               <div>
                 <label className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
                   <FaUser className="text-green-600 text-xs" />
-                  Receiver Name
+                  Receiver Name <span className="text-red-600 text-[16px]">*</span>
                 </label>
                 <input
                   type="text"
@@ -412,7 +429,7 @@ export default function CreateShipmentForm({ token }) {
               <div>
                 <label className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
                   <FaPhone className="text-green-600 text-xs" />
-                  Phone Number
+                  Phone Number <span className="text-red-600 text-[16px]">*</span>
                 </label>
                 <input
                   type="text"
@@ -426,7 +443,7 @@ export default function CreateShipmentForm({ token }) {
               <div>
                 <label className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
                   <FaEnvelope className="text-green-600 text-xs" />
-                  Email Address
+                  Email Address <span className="text-red-600 text-[16px]">*</span>
                 </label>
                 <input
                   type="email"
@@ -440,7 +457,7 @@ export default function CreateShipmentForm({ token }) {
               <div>
                 <label className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
                   <FaMapPin className="text-green-600 text-xs" />
-                  Address
+                  Address <span className="text-red-600 text-[16px]">*</span>
                 </label>
                 <input
                   type="text"
@@ -464,7 +481,7 @@ export default function CreateShipmentForm({ token }) {
               <div>
                 <label className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
                   <FaMapMarkerAlt className="text-orange-600 text-xs" />
-                  Origin (Pickup)
+                  Origin (Pickup) <span className="text-red-600 text-[16px]">*</span>
                 </label>
                 <input
                   type="text"
@@ -478,7 +495,7 @@ export default function CreateShipmentForm({ token }) {
               <div>
                 <label className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
                   <FaMapMarkerAlt className="text-orange-600 text-xs" />
-                  Destination (Delivery)
+                  Destination (Delivery) <span className="text-red-600 text-[16px]">*</span>
                 </label>
                 <input
                   type="text"
@@ -550,7 +567,7 @@ export default function CreateShipmentForm({ token }) {
                 <h4 className="text-sm font-bold text-gray-700 mb-4 pb-2 border-b-2 border-cyan-200">Dimensions & Weight</h4>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-gray-600 mb-2">Weight (kg)</label>
+                    <label className="block text-xs font-semibold text-gray-600 mb-2">Weight (kg) <span className="text-red-600 text-[16px]">*</span></label>
                     <input
                       type="number"
                       name="weight"
@@ -561,7 +578,7 @@ export default function CreateShipmentForm({ token }) {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-gray-600 mb-2">Length (cm) - Optional</label>
+                    <label className="block text-xs font-semibold text-gray-600 mb-2">Length (cm) - <span className="text-blue-600 text-[14px]">(Optional)</span></label>
                     <input
                       type="number"
                       name="length"
@@ -572,7 +589,7 @@ export default function CreateShipmentForm({ token }) {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-gray-600 mb-2">Width (cm) - Optional</label>
+                    <label className="block text-xs font-semibold text-gray-600 mb-2">Width (cm) - <span className="text-blue-600 text-[14px]">(Optional)</span></label>
                     <input
                       type="number"
                       name="width"
@@ -583,7 +600,7 @@ export default function CreateShipmentForm({ token }) {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-gray-600 mb-2">Height (cm) - Optional</label>
+                    <label className="block text-xs font-semibold text-gray-600 mb-2">Height (cm) - <span className="text-blue-600 text-[14px]">(Optional)</span></label>
                     <input
                       type="number"
                       name="height"
@@ -599,7 +616,7 @@ export default function CreateShipmentForm({ token }) {
               {/* Breadth & Volume */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Breadth (cm) - Optional</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Breadth (cm) - <span className="text-blue-600 text-[14px]">(Optional)</span></label>
                   <input
                     type="number"
                     name="breadth"
@@ -610,7 +627,7 @@ export default function CreateShipmentForm({ token }) {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Volume - Optional</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Volume - <span className="text-blue-600 text-[14px]">(Optional)</span></label>
                   <input
                     type="number"
                     name="volume"
@@ -625,7 +642,7 @@ export default function CreateShipmentForm({ token }) {
               {/* Type & Purpose */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Shipment Type</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Shipment Type <span className="text-red-600 text-[16px]">*</span></label>
                   <select
                     name="shipmentType"
                     value={form.shipmentType}
@@ -641,7 +658,7 @@ export default function CreateShipmentForm({ token }) {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Shipment Purpose</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Shipment Purpose <span className="text-red-600 text-[16px]">*</span></label>
                   <select
                     name="shipmentPurpose"
                     value={form.shipmentPurpose}
@@ -662,7 +679,7 @@ export default function CreateShipmentForm({ token }) {
               {/* Facility & Pieces */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Shipment Facility</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Shipment Facility <span className="text-red-600 text-[16px]">*</span></label>
                   <select
                     name="shipmentFacility"
                     value={form.shipmentFacility}
@@ -688,7 +705,7 @@ export default function CreateShipmentForm({ token }) {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Shipment Pieces</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Shipment Pieces <span className="text-blue-600 text-[14px]">(Optional)</span></label>
                   <input
                     type="text"
                     name="shipmentPieces"
@@ -703,7 +720,7 @@ export default function CreateShipmentForm({ token }) {
               {/* Dates & Cost */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Shipment Date</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Shipment Date <span className="text-red-600 text-[16px]">*</span></label>
                   <input
                     type="date"
                     name="shipmentDate"
@@ -713,7 +730,7 @@ export default function CreateShipmentForm({ token }) {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Delivery Date</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Delivery Date <span className="text-red-600 text-[16px]">*</span></label>
                   <input
                     type="date"
                     name="deliveryDate"
@@ -723,7 +740,7 @@ export default function CreateShipmentForm({ token }) {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Shipping Cost (₦)</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Shipping Cost (₦) <span className="text-blue-600 text-[14px]">(Optional)</span></label>
                   <input
                     type="text"
                     name="cost"
@@ -737,7 +754,7 @@ export default function CreateShipmentForm({ token }) {
 
               {/* Notes */}
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Additional Notes</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Additional Notes <span className="text-blue-600 text-[14px]">(Optional)</span></label>
                 <textarea
                   name="notes"
                   value={form.notes}
