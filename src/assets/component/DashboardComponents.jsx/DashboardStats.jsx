@@ -1,31 +1,24 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useQueries } from '@tanstack/react-query';
-import axios from 'axios';
-import { API_BASE_URL } from '../../../config/Api'; // Corrected path to Api.js if needed
+import { useNavigate } from 'react-router-dom';
+import axiosInstance from '../../../config/axiosConfig';
+import { API_BASE_URL } from '../../../config/Api';
 import { FaSpinner, FaTimesCircle, FaUsers, FaPrayingHands, FaCalendarAlt, FaHandshake, FaDollarSign, FaBlog } from 'react-icons/fa';
 import PageIcon from '@rsuite/icons/Page';
 import DocPassIcon from '@rsuite/icons/DocPass';
 import { Link } from 'react-router-dom';
 
-// Helper function to fetch data with auth token
+// Helper function to fetch data with auth token (using configured axios instance)
 const fetchData = async (url) => {
   const token = localStorage.getItem('token');
-  // --- START: CRITICAL LOGS FOR FETCHDATA ---
-  console.log('--- DashboardStats fetchData ---');
-  console.log('URL being fetched:', url);
-  console.log('Token from localStorage (raw):', token); // Log the actual token string (for debugging only, remove in production)
-  console.log('Type of token from localStorage:', typeof token);
-  console.log('Length of token from localStorage:', token ? token.length : 'N/A');
-  // --- END: CRITICAL LOGS FOR FETCHDATA ---
-
+  
+  // If no token, reject to trigger redirect in parent component
   if (!token) {
     throw new Error('Authentication token not found. Please log in.');
   }
-  const response = await axios.get(url, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  
+  // Use the configured axiosInstance which has proper 401 handling
+  const response = await axiosInstance.get(url);
   return response.data;
 };
 
@@ -52,6 +45,22 @@ const StatCard = ({ icon: Icon, title, value, isLoading, isError, error }) => {
 };
 
 const DashboardStats = () => {
+  const navigate = useNavigate();
+  const token = localStorage.getItem('token');
+
+  // Redirect to login if no token
+  useEffect(() => {
+    if (!token) {
+      console.warn('⚠️ No authentication token found. Redirecting to login.');
+      navigate('/login', { replace: true });
+    }
+  }, [token, navigate]);
+
+  // Don't render if no token
+  if (!token) {
+    return null;
+  }
+
   // Use useQueries to fetch multiple data points in parallel
   const results = useQueries({
     queries: [

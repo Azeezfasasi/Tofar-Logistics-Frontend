@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import truckload from '../../images/truckload.jpg';
 
 function AboutMain() {
   return (
@@ -19,8 +20,8 @@ function AboutMain() {
           {/* Image */}
           <div className="lg:w-1/2 flex-shrink-0">
             <img
-              src="https://placehold.co/800x600/D1D5DB/4B5563/png?text=Our+Community" // Placeholder for your church community image
-              alt="Church community gathering"
+              src={truckload}
+              alt="Tofar Logistics Agency team"
               className="w-full h-64 sm:h-80 lg:h-full object-cover object-center"
             />
           </div>

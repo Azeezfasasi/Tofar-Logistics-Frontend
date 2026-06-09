@@ -138,7 +138,7 @@ function ContactForm() {
   };
 
   return (
-    <section className="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen flex items-center justify-center py-8 px-4 sm:px-6 lg:px-8 font-inter">
+    <section className="lg:bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen flex items-center justify-center py-8 px-1 sm:px-0 lg:px-4 font-inter">
       <div className="w-full max-w-2xl">
         
         {/* Card Container */}
@@ -230,7 +230,7 @@ function ContactForm() {
                     <label className="block text-sm font-semibold text-gray-700 mb-2">Phone Number</label>
                     <input
                       type="text"
-                      placeholder="Enter your phone number (optional)"
+                      placeholder="Enter your phone number"
                       value={phoneNumber}
                       onChange={(e) => setPhoneNumber(e.target.value)}
                       className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all text-gray-800 placeholder-gray-400"
@@ -302,7 +302,7 @@ function ContactForm() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">Length (cm)</label>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Length (cm) <span className='text-blue-500 text-sm'>Optional</span></label>
                       <input
                         type="text"
                         placeholder="Length"
@@ -312,7 +312,7 @@ function ContactForm() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">Height (cm)</label>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Height (cm) <span className='text-blue-500 text-sm'>Optional</span></label>
                       <input
                         type="text"
                         placeholder="Height"
@@ -397,7 +397,7 @@ function ContactForm() {
               <button
                 onClick={(e) => handleSubmit(e)}
                 disabled={submitContactFormMutation.isPending}
-                className="flex-1 px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold rounded-lg hover:shadow-lg transform hover:-translate-y-1 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm sm:text-base"
+                className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-800 text-white font-semibold rounded-lg hover:shadow-lg transform hover:-translate-y-1 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm sm:text-base"
               >
                 {submitContactFormMutation.isPending ? (
                   <>
