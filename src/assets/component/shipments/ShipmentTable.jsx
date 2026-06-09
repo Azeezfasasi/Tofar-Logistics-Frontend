@@ -4,7 +4,7 @@ import { Pencil, Download, Mail, Eye, Trash2, FileText, Printer, Truck, RefreshC
 
 const ITEMS_PER_PAGE = 10;
 
-export default function ShipmentTable({ shipments, onActionClick }) {
+export default function ShipmentTable({ shipments, onActionClick, selectedShipments = [], onSelectShipment, onSelectAll }) {
   const [currentPage, setCurrentPage] = useState(1);
 
   // filter out shipments with delivered status (case-insensitive)
@@ -16,11 +16,34 @@ export default function ShipmentTable({ shipments, onActionClick }) {
     currentPage * ITEMS_PER_PAGE
   );
 
+  // Check if all items on current page are selected
+  const allPagedSelected = paginated.length > 0 && paginated.every(s => selectedShipments.includes(s._id));
+  
+  // Check if some items on current page are selected
+  const somePagedSelected = paginated.some(s => selectedShipments.includes(s._id)) && !allPagedSelected;
+
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm text-left">
         <thead className="bg-gradient-to-r from-blue-600 to-blue-700 text-white uppercase sticky top-0 z-10">
           <tr>
+            <th className="p-4 font-semibold w-12">
+              <input
+                type="checkbox"
+                checked={allPagedSelected}
+                ref={el => {
+                  if (el) {
+                    el.indeterminate = somePagedSelected && !allPagedSelected;
+                  }
+                }}
+                onChange={(e) => {
+                  if (onSelectAll) {
+                    onSelectAll(e.target.checked, paginated.map(s => s._id));
+                  }
+                }}
+                className="w-5 h-5 cursor-pointer"
+              />
+            </th>
             <th className="p-4 font-semibold">#</th>
             <th className="p-4 font-semibold">Tracking No</th>
             <th className="p-4 font-semibold">Sender</th>
@@ -34,7 +57,19 @@ export default function ShipmentTable({ shipments, onActionClick }) {
         </thead>
         <tbody className="divide-y divide-gray-200">
           {paginated.map((shipment, idx) => (
-            <tr key={shipment._id} className="hover:bg-gray-50 transition-colors duration-150 border-b border-gray-100">
+            <tr key={shipment._id} className={`hover:bg-gray-50 transition-colors duration-150 border-b border-gray-100 ${selectedShipments.includes(shipment._id) ? 'bg-blue-50' : ''}`}>
+              <td className="p-4 text-gray-600 font-medium">
+                <input
+                  type="checkbox"
+                  checked={selectedShipments.includes(shipment._id)}
+                  onChange={(e) => {
+                    if (onSelectShipment) {
+                      onSelectShipment(shipment._id, e.target.checked);
+                    }
+                  }}
+                  className="w-5 h-5 cursor-pointer"
+                />
+              </td>
               <td className="p-4 text-gray-600 font-medium">{(currentPage - 1) * ITEMS_PER_PAGE + idx + 1}</td>
               <td className="p-4 font-semibold text-gray-900">{shipment.trackingNumber}</td>
               <td className="p-4 text-gray-700">{shipment.senderName}</td>
@@ -129,7 +164,7 @@ export default function ShipmentTable({ shipments, onActionClick }) {
           ))}
           {paginated.length === 0 && (
             <tr>
-              <td colSpan={9} className="p-8 text-center">
+              <td colSpan={10} className="p-8 text-center">
                 <div className="text-5xl mb-2">📦</div>
                 <p className="text-gray-500 font-medium">No shipments found</p>
                 <p className="text-gray-400 text-sm">Try adjusting your filters or search criteria</p>

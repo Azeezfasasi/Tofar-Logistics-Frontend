@@ -25,6 +25,9 @@ export default function AllShipmentsMain({ token }) {
   const [error, setError] = useState(null);
   const [facilities, setFacilities] = useState([]);
   const [statuses, setStatuses] = useState([]);
+  const [selectedShipments, setSelectedShipments] = useState([]);
+  const [bulkModalOpen, setBulkModalOpen] = useState(false);
+  const [bulkStatusFilter, setBulkStatusFilter] = useState('');
 
   const getTimestamp = (item) => {
   return new Date(
@@ -230,6 +233,60 @@ export default function AllShipmentsMain({ token }) {
             alert(`Error: ${err.response?.data?.message || err.message}`);
         }
     };
+
+    // Bulk action handlers
+    const handleSelectShipment = (shipmentId, isChecked) => {
+      setSelectedShipments(prev => 
+        isChecked 
+          ? [...prev, shipmentId]
+          : prev.filter(id => id !== shipmentId)
+      );
+    };
+
+    const handleSelectAll = (isChecked, shipmentIds) => {
+      if (isChecked) {
+        setSelectedShipments(prev => {
+          const newIds = shipmentIds.filter(id => !prev.includes(id));
+          return [...prev, ...newIds];
+        });
+      } else {
+        setSelectedShipments(prev => 
+          prev.filter(id => !shipmentIds.includes(id))
+        );
+      }
+    };
+
+    const handleBulkStatusChange = async () => {
+      if (selectedShipments.length === 0 || !bulkStatusFilter) {
+        alert('Please select shipments and a status');
+        return;
+      }
+
+      try {
+        const authToken = token || localStorage.getItem('token');
+        await Promise.all(
+          selectedShipments.map(shipmentId =>
+            axios.patch(`${API_BASE_URL}/shipments/${shipmentId}/status`, { status: bulkStatusFilter }, {
+              headers: {
+                Authorization: `Bearer ${authToken}`,
+              },
+            })
+          )
+        );
+        alert(`Successfully updated ${selectedShipments.length} shipment(s)`);
+        setSelectedShipments([]);
+        setBulkModalOpen(false);
+        setBulkStatusFilter('');
+        fetchShipments();
+      } catch (err) {
+        console.error("Failed to bulk update status", err);
+        alert(`Error: ${err.response?.data?.message || err.message}`);
+      }
+    };
+
+    const clearSelection = () => {
+      setSelectedShipments([]);
+    };
     
     if (loading) { 
     return (
@@ -292,14 +349,92 @@ export default function AllShipmentsMain({ token }) {
         />
       </div>
 
+      {/* Bulk Action Toolbar */}
+      {selectedShipments.length > 0 && (
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="text-sm font-medium text-gray-700">
+              <span className="font-bold text-blue-600">{selectedShipments.length}</span> shipment(s) selected
+            </div>
+          </div>
+          <div className="flex items-center gap-3 flex-wrap">
+            <select
+              value={bulkStatusFilter}
+              onChange={(e) => setBulkStatusFilter(e.target.value)}
+              className="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+            >
+              <option value="">Select status to apply...</option>
+              {Array.isArray(statuses) && statuses.length > 0 ? (
+                statuses.map((status) => (
+                  status.isActive && (
+                    <option key={status._id} value={status.code || status.name.toLowerCase()}>
+                      {status.name}
+                    </option>
+                  )
+                ))
+              ) : (
+                <>
+                  <option value="pending">Pending</option>
+                  <option value="processing">Processing</option>
+                  <option value="in-transit">In Transit</option>
+                  <option value="out-for-delivery">Out For Delivery</option>
+                  <option value="delivered">Delivered</option>
+                </>
+              )}
+            </select>
+            <button
+              onClick={() => setBulkModalOpen(true)}
+              disabled={!bulkStatusFilter}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium"
+            >
+              Update Status
+            </button>
+            <button
+              onClick={clearSelection}
+              className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-all font-medium"
+            >
+              Clear
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Table */}
       <div className="bg-white rounded-xl shadow-md overflow-hidden">
         <ShipmentTable
           shipments={filteredShipments}
           onActionClick={openModal}
           onDeleteClick={(shipment) => openModal(shipment, 'delete')}
+          selectedShipments={selectedShipments}
+          onSelectShipment={handleSelectShipment}
+          onSelectAll={handleSelectAll}
         />
       </div>
+
+        {/* Bulk Status Update Confirmation Modal */}
+        <BasicModal isOpen={bulkModalOpen} onClose={() => setBulkModalOpen(false)}>
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <h3 className="text-lg font-bold text-gray-900 mb-4">Confirm Bulk Status Update</h3>
+            <p className="text-gray-600 mb-6">
+              You are about to update the status of <span className="font-bold text-blue-600">{selectedShipments.length}</span> shipment(s) to <span className="font-bold">{bulkStatusFilter}</span>.
+            </p>
+            <p className="text-sm text-gray-500 mb-6">This action cannot be undone.</p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setBulkModalOpen(false)}
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleBulkStatusChange}
+                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium"
+              >
+                Update
+              </button>
+            </div>
+          </div>
+        </BasicModal>
 
         {/* Modals */}
         {selectedShipment && (
