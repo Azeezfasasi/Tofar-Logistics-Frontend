@@ -18,10 +18,7 @@ export const useBackendWakeup = () => {
       try {
         await axiosInstance.get(`${API_BASE_URL}/wakeup`, { 
           signal: controller.signal,
-          timeout: timeoutMs,
-          headers: {
-            'Cache-Control': 'no-cache'
-          }
+          timeout: timeoutMs
         });
         console.log('✅ Backend wakeup successful');
       } catch (err) {

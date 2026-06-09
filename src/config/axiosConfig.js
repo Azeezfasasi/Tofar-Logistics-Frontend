@@ -18,11 +18,6 @@ axiosInstance.interceptors.request.use(
       config.timeout = 45000; // Increased for iOS
     }
     
-    // Add cache-busting headers for iOS
-    config.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate';
-    config.headers['Pragma'] = 'no-cache';
-    config.headers['Expires'] = '0';
-    
     // Create AbortController for proper timeout handling on iOS
     if (!config.signal) {
       const controller = new AbortController();
