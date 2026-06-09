@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import Marquee from 'react-fast-marquee'
+import axiosInstance from '@/config/axiosConfig'
 import { API_BASE_URL } from '@/config/Api'
 
 export default function MessageSlides() {
@@ -10,10 +11,8 @@ export default function MessageSlides() {
   useEffect(() => {
     const fetchMessages = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/messageslides`)
-        if (!response.ok) throw new Error('Failed to fetch messages')
-        const data = await response.json()
-        setMessages(data.data || [])
+        const response = await axiosInstance.get(`${API_BASE_URL}/messageslides`)
+        setMessages(response.data.data || [])
       } catch (err) {
         setError(err.message)
         console.error('Error fetching messages:', err)

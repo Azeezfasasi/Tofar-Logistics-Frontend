@@ -12,7 +12,7 @@ export const useBackendWakeup = () => {
     const wakeupBackend = async () => {
       try {
         await axiosInstance.get(`${API_BASE_URL}/wakeup`, { 
-          timeout: 5000 // Quick timeout for ping
+          timeout: 45000 // 45 second timeout for first cold start on Render.com
         });
         console.log('✅ Backend wakeup successful');
       } catch (err) {

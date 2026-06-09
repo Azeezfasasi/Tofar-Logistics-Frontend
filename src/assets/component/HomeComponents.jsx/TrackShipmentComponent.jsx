@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import axiosInstance from '@/config/axiosConfig';
 import { API_BASE_URL } from '@/config/Api';
 
 export default function TrackShipmentComponent() {
@@ -30,17 +31,8 @@ export default function TrackShipmentComponent() {
 
     // Make an API call to the backend tracking endpoint
     try {
-      const response = await fetch(`${API_BASE_URL}/shipments/track/${trackNum}`);
-      
-      // Check if the response is successful
-      if (!response.ok) {
-        // Parse the error message from the backend if available
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Tracking number not found.');
-      }
-
-      const data = await response.json();
-      setTrackingResult(data);
+      const response = await axiosInstance.get(`${API_BASE_URL}/shipments/track/${trackNum}`);
+      setTrackingResult(response.data);
 
     } catch (err) {
       console.error('Tracking error:', err);

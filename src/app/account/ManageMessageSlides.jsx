@@ -2,6 +2,7 @@ import DashHeader from '@/assets/component/DashboardComponents.jsx/DashHeader'
 import DashMenu from '@/assets/component/DashboardComponents.jsx/DashMenu'
 import React, { useState, useEffect } from 'react'
 import { Helmet } from 'react-helmet';
+import axiosInstance from '@/config/axiosConfig'
 import { API_BASE_URL } from '@/config/Api';
 
 export default function ManageMessageSlides() {
@@ -27,10 +28,8 @@ export default function ManageMessageSlides() {
   const fetchMessages = async () => {
     setLoading(true)
     try {
-      const response = await fetch(`${API_BASE_URL}/messageslides`)
-      if (!response.ok) throw new Error('Failed to fetch messages')
-      const data = await response.json()
-      setMessages(data.data || [])
+      const response = await axiosInstance.get(`${API_BASE_URL}/messageslides`)
+      setMessages(response.data.data || [])
     } catch (err) {
       setErrorMessage('Failed to load messages')
       console.error('Error:', err)
@@ -61,16 +60,10 @@ export default function ManageMessageSlides() {
         ? `${API_BASE_URL}/messageslides/${editingId}`
         : `${API_BASE_URL}/messageslides`
       
-      const method = editingId ? 'PUT' : 'POST'
+      const method = editingId ? 'put' : 'post'
       
-      const response = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      })
+      const _response = await axiosInstance[method](url, formData)
 
-      if (!response.ok) throw new Error('Failed to save message')
-      
       setSuccessMessage(editingId ? 'Message updated successfully!' : 'Message created successfully!')
       resetForm()
       fetchMessages()
@@ -99,12 +92,8 @@ export default function ManageMessageSlides() {
 
     setLoading(true)
     try {
-      const response = await fetch(`${API_BASE_URL}/messageslides/${id}`, {
-        method: 'DELETE',
-      })
+      const _response = await axiosInstance.delete(`${API_BASE_URL}/messageslides/${id}`)
 
-      if (!response.ok) throw new Error('Failed to delete message')
-      
       setSuccessMessage('Message deleted successfully!')
       fetchMessages()
       setTimeout(() => setSuccessMessage(''), 3000)

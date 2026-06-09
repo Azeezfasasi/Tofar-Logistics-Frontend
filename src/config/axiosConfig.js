@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Create axios instance with default timeout
 export const axiosInstance = axios.create({
-  timeout: 15000, // 15 second timeout for all requests
+  timeout: 30000, // 30 second timeout (Render.com cold start takes up to 50s on first request)
 });
 
 // Request interceptor - add token to all requests
@@ -14,7 +14,7 @@ axiosInstance.interceptors.request.use(
     }
     // Set timeout if not already set
     if (!config.timeout) {
-      config.timeout = 15000;
+      config.timeout = 30000;
     }
     return config;
   },
@@ -36,7 +36,13 @@ axiosInstance.interceptors.response.use(
       });
     }
     
-    // Retry logic for network errors
+    // Skip retries for wakeup endpoint (no point in retrying a cold start ping)
+    const isWakeupRequest = config?.url?.includes('/api/wakeup');
+    if (isWakeupRequest) {
+      return Promise.reject(error);
+    }
+    
+    // Retry logic for network errors (but not for wakeup or auth errors)
     if (!config || !config.retry) {
       config.retry = 0;
     }
