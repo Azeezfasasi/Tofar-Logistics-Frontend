@@ -1,5 +1,6 @@
 import { Route, Routes } from "react-router-dom"
 import './App.css';
+import { useBackendWakeup } from './hooks/useBackendWakeup';
 import Home from "./app/Home"
 import Login from "./Login"
 import ForgetPassword from "./ForgetPassword"
@@ -65,6 +66,8 @@ import SMSStatistics from "./components/sms-components/SMSStatistics";
 import SMSLogs from "./components/sms-components/SMSLogs";
 
 function App() {
+  // Keep backend alive with periodic wakeup calls
+  useBackendWakeup();
 
   return (
     <>

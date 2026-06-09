@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { AlertCircle, CheckCircle, Clock, XCircle } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-import axios from 'axios';
+import axiosInstance from '../../config/axiosConfig';
 import { API_BASE_URL } from '../sms-components/../sms-components/../../config/Api';
 
 export default function SMSStatistics() {
@@ -13,17 +13,15 @@ export default function SMSStatistics() {
   const { data: stats, isLoading, error } = useQuery({
     queryKey: ['smsStatistics', dateRange],
     queryFn: async () => {
-      const response = await axios.get(`${API_BASE_URL}/sms/statistics`, {
+      const response = await axiosInstance.get(`${API_BASE_URL}/sms/statistics`, {
         params: {
           startDate: dateRange.startDate,
           endDate: dateRange.endDate,
         },
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
       });
       return response.data;
     },
+    retry: 2,
   });
 
   const StatCard = ({ title, value, icon: Icon, color }) => (

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Save, AlertCircle, CheckCircle } from 'lucide-react';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import axios from 'axios';
+import axiosInstance from '../../config/axiosConfig';
 import toast from 'react-hot-toast';
 import { API_BASE_URL } from '../sms-components/../sms-components/../../config/Api';
 
@@ -22,25 +22,20 @@ export default function SMSSettings() {
     logAllSMS: true,
   });
 
-  const token = localStorage.getItem('token');
-
   // Fetch current settings
   const { data: settings, isLoading } = useQuery({
     queryKey: ['smsSettings'],
     queryFn: async () => {
-      const response = await axios.get(`${API_BASE_URL}/sms/settings`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await axiosInstance.get(`${API_BASE_URL}/sms/settings`);
       return response.data;
     },
+    retry: 2,
   });
 
   // Update settings mutation
   const updateMutation = useMutation({
     mutationFn: async (data) => {
-      const response = await axios.put(`${API_BASE_URL}/sms/settings`, data, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await axiosInstance.put(`${API_BASE_URL}/sms/settings`, data);
       return response.data;
     },
     onSuccess: () => {

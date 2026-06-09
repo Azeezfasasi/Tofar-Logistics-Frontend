@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
+import axiosInstance from '../../config/axiosConfig';
 import { ProfileContext } from './ProfileContext';
 import { API_BASE_URL } from '../../config/Api';
 
@@ -23,7 +23,7 @@ export const ProfileProvider = ({ children }) => {
     setError(null);
     try {
       const { email, password } = credentials;
-      const res = await axios.post(`${API_BASE_URL}/profile/login`, { email, password });
+      const res = await axiosInstance.post(`${API_BASE_URL}/profile/login`, { email, password });
       const { token: receivedToken, user } = res.data; // Renamed to avoid confusion with state 'token'
       
       // --- START: CRITICAL LOGS FOR LOGIN SUCCESS ---
@@ -55,7 +55,7 @@ export const ProfileProvider = ({ children }) => {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await axios.post(`${API_BASE_URL}/profile/register`, userData);
+      const res = await axiosInstance.post(`${API_BASE_URL}/profile/register`, userData);
       const { token: receivedToken, user } = res.data; // Renamed
       
       // --- START: CRITICAL LOGS FOR REGISTER SUCCESS ---
@@ -111,8 +111,7 @@ export const ProfileProvider = ({ children }) => {
     }
 
     try {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${currentTokenInLocalStorage}`;
-      const res = await axios.get(`${API_BASE_URL}/profile/me`);
+      const res = await axiosInstance.get(`${API_BASE_URL}/profile/me`);
       setCurrentUser(res.data.user);
       console.log('Auth check successful. User:', res.data.user.email);
     } catch (err) {
@@ -127,10 +126,8 @@ export const ProfileProvider = ({ children }) => {
   useEffect(() => {
     const initialToken = localStorage.getItem('token');
     if (initialToken) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${initialToken}`;
       checkAuthStatus();
     } else {
-      delete axios.defaults.headers.common['Authorization'];
       setIsLoading(false); 
     }
   }, [checkAuthStatus]); 
@@ -139,7 +136,7 @@ export const ProfileProvider = ({ children }) => {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await axios.post(`${API_BASE_URL}/profile/forgot-password`, { email });
+      const res = await axiosInstance.post(`${API_BASE_URL}/profile/forgot-password`, { email });
       return { success: true, message: res.data.message };
     } catch (err) {
       const errorMessage = err.response?.data?.message || 'Failed to send reset email. Please try again.';
@@ -154,7 +151,7 @@ export const ProfileProvider = ({ children }) => {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await axios.put(`${API_BASE_URL}/edit/${userId}`, updates);
+      const res = await axiosInstance.put(`${API_BASE_URL}/edit/${userId}`, updates);
       setCurrentUser(res.data);
       return { success: true, message: 'Profile updated successfully!' };
     } catch (err) {
@@ -170,7 +167,7 @@ export const ProfileProvider = ({ children }) => {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await axios.get(`${API_BASE_URL}/all`);
+      const res = await axiosInstance.get(`${API_BASE_URL}/all`);
       return { success: true, users: res.data };
     } catch (err) {
       const errorMessage = err.response?.data?.message || 'Failed to fetch users.';
@@ -185,7 +182,7 @@ export const ProfileProvider = ({ children }) => {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await axios.delete(`${API_BASE_URL}/delete/${userIdToDelete}`);
+      const res = await axiosInstance.delete(`${API_BASE_URL}/delete/${userIdToDelete}`);
       return { success: true, message: res.data.message };
     } catch (err) {
       const errorMessage = err.response?.data?.message || 'Failed to delete user.';
@@ -200,7 +197,7 @@ export const ProfileProvider = ({ children }) => {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await axios.put(`${API_BASE_URL}/disable/${userIdToDisable}`);
+      const res = await axiosInstance.put(`${API_BASE_URL}/disable/${userIdToDisable}`);
       return { success: true, message: res.data.message };
     } catch (err) {
       const errorMessage = err.response?.data?.message || 'Failed to disable user.';
@@ -215,7 +212,7 @@ export const ProfileProvider = ({ children }) => {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await axios.put(`${API_BASE_URL}/suspend/${userIdToSuspend}`);
+      const res = await axiosInstance.put(`${API_BASE_URL}/suspend/${userIdToSuspend}`);
       return { success: true, message: res.data.message };
     } catch (err) {
       const errorMessage = err.response?.data?.message || 'Failed to suspend user.';

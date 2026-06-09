@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Send, AlertCircle, CheckCircle } from 'lucide-react';
 import { useMutation } from '@tanstack/react-query';
-import axios from 'axios';
+import axiosInstance from '../../config/axiosConfig';
 import toast from 'react-hot-toast';
 import { API_BASE_URL } from '../sms-components/../sms-components/../../config/Api';
 
@@ -11,13 +11,10 @@ export default function SendTestSMS() {
     message: '',
   });
   const [result, setResult] = useState(null);
-  const token = localStorage.getItem('token');
 
   const sendTestMutation = useMutation({
     mutationFn: async (data) => {
-      const response = await axios.post(`${API_BASE_URL}/sms/test-sms`, data, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await axiosInstance.post(`${API_BASE_URL}/sms/test-sms`, data);
       return response.data;
     },
     onSuccess: (data) => {

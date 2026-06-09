@@ -1,21 +1,16 @@
 import React from 'react';
 import { Wallet, RefreshCw, AlertCircle } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-import axios from 'axios';
+import axiosInstance from '../../config/axiosConfig';
 import { API_BASE_URL } from '../sms-components/../sms-components/../../config/Api';
 
 
 export default function SMSBalance() {
-  const token = localStorage.getItem('token');
-
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['smsBalance'],
     queryFn: async () => {
       try {
-        const response = await axios.get(`${API_BASE_URL}/sms/balance`, {
-          headers: { Authorization: `Bearer ${token}` },
-          timeout: 8000, // 8 second timeout on client side too
-        });
+        const response = await axiosInstance.get(`${API_BASE_URL}/sms/balance`);
         return response.data;
       } catch (error) {
         if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
@@ -24,10 +19,10 @@ export default function SMSBalance() {
         throw error;
       }
     },
-    refetchInterval: 10 * 60 * 1000, // Refetch every 10 minutes (reduced from 5)
+    refetchInterval: 10 * 60 * 1000, // Refetch every 10 minutes
     refetchOnWindowFocus: false, // Don't refetch when window regains focus
-    retry: 3, // Retry failed requests 3 times
-    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
+    retry: 2, // Retry failed requests 2 times (interceptor handles 3rd attempt)
+    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 10000), // Exponential backoff
     staleTime: 5 * 60 * 1000, // Data is fresh for 5 minutes
   });
 

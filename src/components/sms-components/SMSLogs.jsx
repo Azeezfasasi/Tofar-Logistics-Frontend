@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Trash2, Eye } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import axios from 'axios';
+import axiosInstance from '../../config/axiosConfig';
 import toast from 'react-hot-toast';
 import { API_BASE_URL } from '../sms-components/../sms-components/../../config/Api';
 
@@ -14,26 +14,24 @@ export default function SMSLogs() {
   });
   const [selectedLog, setSelectedLog] = useState(null);
   const queryClient = useQueryClient();
-  const token = localStorage.getItem('token');
 
   // Fetch SMS logs
   const { data: logsData, isLoading } = useQuery({
     queryKey: ['smsLogs', filters],
     queryFn: async () => {
-      const response = await axios.get(`${API_BASE_URL}/sms/logs`, {
+      const response = await axiosInstance.get(`${API_BASE_URL}/sms/logs`, {
         params: filters,
-        headers: { Authorization: `Bearer ${token}` },
       });
       return response.data;
     },
+    retry: 2,
+    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 10000),
   });
 
   // Delete log mutation
   const deleteMutation = useMutation({
     mutationFn: async (logId) => {
-      await axios.delete(`${API_BASE_URL}/sms/logs/${logId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await axiosInstance.delete(`${API_BASE_URL}/sms/logs/${logId}`);
     },
     onSuccess: () => {
       toast.success('SMS log deleted');
