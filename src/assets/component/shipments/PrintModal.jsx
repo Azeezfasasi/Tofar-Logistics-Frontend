@@ -41,10 +41,14 @@ export default function PrintModalContent({ shipment, onClose }) {
     }
 
     setIsDownloading(true);
+    
+    let tempContainer = null;
+    let styleOverride = null;
+    let disabledSheets = [];
 
     try {
       // Create a style element that will override oklch colors
-      const styleOverride = document.createElement('style');
+      styleOverride = document.createElement('style');
       styleOverride.textContent = `
         * {
           color: #000000 !important;
@@ -61,11 +65,13 @@ export default function PrintModalContent({ shipment, onClose }) {
       const clonedElement = printRef.current.cloneNode(true);
       
       // Create a temporary container
-      const tempContainer = document.createElement('div');
+      tempContainer = document.createElement('div');
       tempContainer.style.position = 'absolute';
       tempContainer.style.left = '-9999px';
       tempContainer.style.top = '-9999px';
       tempContainer.style.width = '1000px';
+      tempContainer.style.visibility = 'hidden';
+      tempContainer.style.pointerEvents = 'none';
       document.body.appendChild(tempContainer);
       tempContainer.appendChild(clonedElement);
 
@@ -119,7 +125,7 @@ export default function PrintModalContent({ shipment, onClose }) {
       applyBasicStyles(clonedElement);
 
       // Disable all stylesheets temporarily
-      const disabledSheets = [];
+      disabledSheets = [];
       Array.from(document.styleSheets).forEach(sheet => {
         try {
           if (sheet.disabled === false) {
@@ -138,17 +144,9 @@ export default function PrintModalContent({ shipment, onClose }) {
         logging: false,
         backgroundColor: '#ffffff',
         allowTaint: true,
-        removeContainer: false,
+        removeContainer: true,
+        willReadFrequently: false,
       });
-
-      // Re-enable stylesheets
-      disabledSheets.forEach(sheet => {
-        sheet.disabled = false;
-      });
-
-      // Remove temporary container and style override
-      document.body.removeChild(tempContainer);
-      document.head.removeChild(styleOverride);
 
       const imgData = canvas.toDataURL('image/png');
       const pdf = new window.jspdf.jsPDF('p', 'mm', 'a4');
@@ -182,6 +180,16 @@ export default function PrintModalContent({ shipment, onClose }) {
       console.error("Failed to generate PDF:", error);
       alert('Failed to generate PDF. Please try again.');
     } finally {
+      // Always clean up temporary elements and stylesheets
+      if (tempContainer && tempContainer.parentNode) {
+        tempContainer.parentNode.removeChild(tempContainer);
+      }
+      if (styleOverride && styleOverride.parentNode) {
+        styleOverride.parentNode.removeChild(styleOverride);
+      }
+      disabledSheets.forEach(sheet => {
+        sheet.disabled = false;
+      });
       setIsDownloading(false);
     }
   };
