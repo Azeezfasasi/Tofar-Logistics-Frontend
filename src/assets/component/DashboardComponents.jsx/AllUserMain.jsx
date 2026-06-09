@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom';
 
 function AllUserMain() {
   const queryClient = useQueryClient();
-  const { isAuthenticated, isAdmin, isEmployee, isLoading: authLoading } = useProfile();
+  const { isAuthenticated, isAdmin, isEmployee, isLoading: authLoading, token } = useProfile();
 
   // State for search, filter, and pagination
   const [searchTerm, setSearchTerm] = useState('');
@@ -49,7 +49,11 @@ function AllUserMain() {
     queryKey: ['allUsers'], // Unique key for fetching all users
     queryFn: async () => {
       // This endpoint is protected by authorize('admin') on the backend
-      const response = await axios.get(`${API_BASE_URL}/profile/all`);
+      const response = await axios.get(`${API_BASE_URL}/profile/all`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       return response.data;
     },
     staleTime: 5 * 60 * 1000, // Data considered fresh for 5 minutes
@@ -59,7 +63,11 @@ function AllUserMain() {
   // Mutation for editing a user
   const editUserMutation = useMutation({
     mutationFn: async (updatedUser) => {
-      const response = await axios.put(`${API_BASE_URL}/profile/edit/${updatedUser._id}`, updatedUser);
+      const response = await axios.put(`${API_BASE_URL}/profile/edit/${updatedUser._id}`, updatedUser, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       return response.data;
     },
     onSuccess: () => {
@@ -79,7 +87,11 @@ function AllUserMain() {
   // Mutation for deleting a user
   const deleteUserMutation = useMutation({
     mutationFn: async (userIdToDelete) => {
-      await axios.delete(`${API_BASE_URL}/profile/delete/${userIdToDelete}`);
+      await axios.delete(`${API_BASE_URL}/profile/delete/${userIdToDelete}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
     },
     onSuccess: () => {
       setActionMessage('User deleted successfully!');
@@ -96,7 +108,11 @@ function AllUserMain() {
   // Mutation for toggling user disabled status
   const toggleDisableUserMutation = useMutation({
     mutationFn: async ({ userIdToToggle, isDisabled }) => {
-      const response = await axios.put(`${API_BASE_URL}/profile/edit/${userIdToToggle}`, { isDisabled: !isDisabled });
+      const response = await axios.put(`${API_BASE_URL}/profile/edit/${userIdToToggle}`, { isDisabled: !isDisabled }, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       return response.data;
     },
     onSuccess: (data) => {
@@ -115,7 +131,11 @@ function AllUserMain() {
   const toggleSuspendUserMutation = useMutation({
     mutationFn: async ({ userIdToToggle, isSuspended }) => {
       // Similar to disable, using PUT to editUser to set isSuspended.
-      const response = await axios.put(`${API_BASE_URL}/profile/edit/${userIdToToggle}`, { isSuspended: !isSuspended });
+      const response = await axios.put(`${API_BASE_URL}/profile/edit/${userIdToToggle}`, { isSuspended: !isSuspended }, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       return response.data;
     },
     onSuccess: (data) => {
