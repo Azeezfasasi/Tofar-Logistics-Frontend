@@ -11,6 +11,7 @@ import { API_BASE_URL } from '../../../config/Api';
 import BasicModal from '@/components/ui/BasicModal';
 import DeleteConfirmationModal from '../shipments/DeleteConfirmationModal';
 import { FaSpinner } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
 
 export default function AllShipmentsMain({ token }) {
   const [shipments, setShipments] = useState([]);
@@ -264,12 +265,17 @@ export default function AllShipmentsMain({ token }) {
 
   return (
     <div className="p-6 space-y-6 bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row gap-3 md:gap-0 items-center justify-between">
         <div>
           <h1 className='font-bold text-3xl lg:text-4xl text-gray-900'>All Shipments</h1>
           <p className="text-gray-600 text-sm mt-1">Manage and track your logistics shipments</p>
         </div>
-        <div className="hidden md:block text-4xl">📦</div>
+        <div className="flex items-center gap-4">
+          {/* add link to create shipment */}
+          <Link to="/app/account/createshipment" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 font-medium">
+            + Create Shipment
+          </Link>
+        </div>
       </div>
       {/* Toolbar and Filters */}
       <div className="bg-white rounded-xl shadow-md p-6 backdrop-blur-sm">
