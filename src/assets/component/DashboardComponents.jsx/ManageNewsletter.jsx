@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import axios from 'axios';
+import axiosInstance from '../../../config/axiosConfig';
 import { API_BASE_URL } from '../../../config/Api';
 import { useProfile } from '../../context-api/ProfileContext';
 import { Link } from 'react-router-dom';
@@ -43,7 +43,7 @@ function ManageNewsletter() {
     queryKey: ['allNewsletters'], // Unique key for fetching all newsletters
     queryFn: async () => {
       // This endpoint is now accessible by admin and pastor on the backend
-      const response = await axios.get(`${API_BASE_URL}/newsletter`); // Using the new GET / route
+      const response = await axiosInstance.get(`${API_BASE_URL}/newsletter`); // Using the new GET / route
       return response.data.sort((a, b) => new Date(b.date) - new Date(a.date)); // Sort by date descending
     },
     staleTime: 5 * 60 * 1000,
@@ -53,7 +53,7 @@ function ManageNewsletter() {
   // Mutation for editing a newsletter
   const editNewsletterMutation = useMutation({
     mutationFn: async (updatedNewsletter) => {
-      const response = await axios.put(`${API_BASE_URL}/newsletter/${updatedNewsletter._id}`, {
+      const response = await axiosInstance.put(`${API_BASE_URL}/newsletter/${updatedNewsletter._id}`, {
         subject: updatedNewsletter.subject,
         content: updatedNewsletter.content,
       });
@@ -75,7 +75,7 @@ function ManageNewsletter() {
   // Mutation for deleting a newsletter
   const deleteNewsletterMutation = useMutation({
     mutationFn: async (newsletterId) => {
-      await axios.delete(`${API_BASE_URL}/newsletter/${newsletterId}`);
+      await axiosInstance.delete(`${API_BASE_URL}/newsletter/${newsletterId}`);
     },
     onSuccess: () => {
       setActionMessage('Newsletter deleted successfully!');

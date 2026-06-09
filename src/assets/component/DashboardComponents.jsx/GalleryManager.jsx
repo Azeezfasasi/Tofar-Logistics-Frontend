@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axiosInstance from '../../../config/axiosConfig';
 import { API_BASE_URL } from '../../../config/Api';
 import { useProfile } from '../../context-api/ProfileContext';
 
@@ -18,7 +18,7 @@ function GalleryManager() {
   const fetchImages = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`${API_BASE_URL}/gallery`);
+      const res = await axiosInstance.get(`${API_BASE_URL}/gallery`);
       setImages(res.data);
     } catch (err) {
       console.log(err)
@@ -35,7 +35,7 @@ function GalleryManager() {
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this image?')) return;
     try {
-      await axios.delete(`${API_BASE_URL}/gallery/${id}`, {
+      await axiosInstance.delete(`${API_BASE_URL}/gallery/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setSuccess('Image deleted successfully.');
@@ -48,7 +48,7 @@ function GalleryManager() {
 
   const handleEdit = async (id) => {
     try {
-      await axios.put(`${API_BASE_URL}/gallery/${id}`, { caption: newCaption }, {
+      await axiosInstance.put(`${API_BASE_URL}/gallery/${id}`, { caption: newCaption }, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setSuccess('Caption updated successfully.');
@@ -62,7 +62,7 @@ function GalleryManager() {
 
   const handleStatusChange = async (id, newStatus) => {
     try {
-      await axios.patch(`${API_BASE_URL}/gallery/${id}/status`, { status: newStatus }, {
+      await axiosInstance.patch(`${API_BASE_URL}/gallery/${id}/status`, { status: newStatus }, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setSuccess('Image status updated.');

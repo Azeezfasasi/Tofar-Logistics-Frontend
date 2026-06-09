@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import axios from 'axios';
+import  axiosInstance  from '../../../config/axiosConfig';
 import { API_BASE_URL } from '../../../config/Api';
 import { useProfile } from '../../context-api/ProfileContext';
 import { Link } from 'react-router-dom';
@@ -52,7 +52,7 @@ function MyAppointmentMain() {
     queryKey: ['myAppointments'], // Unique key for fetching user's appointments
     queryFn: async () => {
       // This endpoint fetches appointments for the authenticated user
-      const response = await axios.get(`${API_BASE_URL}/appointments/my-appointments`);
+      const response = await axiosInstance.get(`${API_BASE_URL}/appointments/my-appointments`);
       return response.data.sort((a, b) => new Date(a.appointmentDate) - new Date(b.appointmentDate)); // Sort by date
     },
     staleTime: 5 * 60 * 1000,
@@ -62,7 +62,7 @@ function MyAppointmentMain() {
   // Mutation for rescheduling an appointment
   const rescheduleAppointmentMutation = useMutation({
     mutationFn: async ({ id, newAppointmentDate, newAppointmentTime }) => {
-      const response = await axios.patch(`${API_BASE_URL}/appointments/${id}/reschedule`, { newAppointmentDate, newAppointmentTime });
+      const response = await axiosInstance.patch(`${API_BASE_URL}/appointments/${id}/reschedule`, { newAppointmentDate, newAppointmentTime });
       return response.data;
     },
     onSuccess: () => {
@@ -83,7 +83,7 @@ function MyAppointmentMain() {
   // Mutation for cancelling an appointment
   const cancelAppointmentMutation = useMutation({
     mutationFn: async (appointmentId) => {
-      await axios.patch(`${API_BASE_URL}/appointments/${appointmentId}/cancel`);
+      await axiosInstance.patch(`${API_BASE_URL}/appointments/${appointmentId}/cancel`);
     },
     onSuccess: () => {
       setActionMessage('Appointment cancelled successfully!');

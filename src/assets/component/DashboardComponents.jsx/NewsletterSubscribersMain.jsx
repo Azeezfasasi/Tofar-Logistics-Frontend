@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import axios from 'axios';
+import axiosInstance from '../../../config/axiosConfig';
 import { API_BASE_URL } from '../../../config/Api';
 import { useProfile } from '../../context-api/ProfileContext';
 import { Link } from 'react-router-dom';
@@ -57,7 +57,7 @@ function NewsletterSubscribersMain() {
     queryKey: ['allSubscribers'], // Unique key for fetching all subscribers
     queryFn: async () => {
       // This endpoint is now accessible by admin and pastor on the backend
-      const response = await axios.get(`${API_BASE_URL}/newsletter/subscribers`);
+      const response = await axiosInstance.get(`${API_BASE_URL}/newsletter/subscribers`);
       return response.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); // Sort by creation date
     },
     staleTime: 5 * 60 * 1000,
@@ -67,7 +67,7 @@ function NewsletterSubscribersMain() {
   // Mutation for editing a subscriber
   const editSubscriberMutation = useMutation({
     mutationFn: async (updatedSubscriber) => {
-      const response = await axios.put(`${API_BASE_URL}/newsletter/subscriber/${updatedSubscriber._id}`, {
+      const response = await axiosInstance.put(`${API_BASE_URL}/newsletter/subscriber/${updatedSubscriber._id}`, {
         name: updatedSubscriber.name,
         email: updatedSubscriber.email,
         isSubscribed: updatedSubscriber.isSubscribed,
@@ -90,7 +90,7 @@ function NewsletterSubscribersMain() {
   // Mutation for deleting a subscriber
   const deleteSubscriberMutation = useMutation({
     mutationFn: async (subscriberId) => {
-      await axios.delete(`${API_BASE_URL}/newsletter/subscriber/${subscriberId}`);
+      await axiosInstance.delete(`${API_BASE_URL}/newsletter/subscriber/${subscriberId}`);
     },
     onSuccess: () => {
       setActionMessage('Subscriber deleted successfully!');
@@ -107,7 +107,7 @@ function NewsletterSubscribersMain() {
   // Mutation for sending an email to a single subscriber
   const sendEmailMutation = useMutation({
     mutationFn: async ({ subscriberId, subject, content }) => {
-      const response = await axios.post(`${API_BASE_URL}/newsletter/send-to-subscriber/${subscriberId}`, { subject, content });
+      const response = await axiosInstance.post(`${API_BASE_URL}/newsletter/send-to-subscriber/${subscriberId}`, { subject, content });
       return response.data;
     },
     onSuccess: () => {

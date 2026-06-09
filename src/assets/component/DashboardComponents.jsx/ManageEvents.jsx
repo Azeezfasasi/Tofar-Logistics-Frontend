@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import axios from 'axios';
+import axiosInstance from '../../../config/axiosConfig';
 import { API_BASE_URL } from '../../../config/Api';
 import { useProfile } from '../../context-api/ProfileContext';
 import { Link } from 'react-router-dom';
@@ -63,7 +63,7 @@ function ManageEvents() {
       // Your backend route GET /api/events/admin/all is protected by authorizeRole(['admin']).
       // If you want pastors to also fetch this, your backend route needs to be updated
       // to authorizeRole(['admin', 'pastor']).
-      const response = await axios.get(`${API_BASE_URL}/events/admin/all`);
+      const response = await axiosInstance.get(`${API_BASE_URL}/events/admin/all`);
       return response.data;
     },
     staleTime: 5 * 60 * 1000,
@@ -74,7 +74,7 @@ function ManageEvents() {
   // Mutation for editing an event
   const editEventMutation = useMutation({
     mutationFn: async (updatedEvent) => {
-      const response = await axios.put(`${API_BASE_URL}/events/${updatedEvent._id}`, updatedEvent);
+      const response = await axiosInstance.put(`${API_BASE_URL}/events/${updatedEvent._id}`, updatedEvent);
       return response.data;
     },
     onSuccess: () => {
@@ -94,7 +94,7 @@ function ManageEvents() {
   // Mutation for deleting an event
   const deleteEventMutation = useMutation({
     mutationFn: async (eventId) => {
-      await axios.delete(`${API_BASE_URL}/events/${eventId}`);
+      await axiosInstance.delete(`${API_BASE_URL}/events/${eventId}`);
     },
     onSuccess: () => {
       setActionMessage('Event deleted successfully!');
@@ -112,7 +112,7 @@ function ManageEvents() {
   // Mutation for changing event status
   const changeStatusMutation = useMutation({
     mutationFn: async ({ eventId, status }) => {
-      const response = await axios.patch(`${API_BASE_URL}/events/${eventId}/status`, { status });
+      const response = await axiosInstance.patch(`${API_BASE_URL}/events/${eventId}/status`, { status });
       return response.data;
     },
     onSuccess: () => {

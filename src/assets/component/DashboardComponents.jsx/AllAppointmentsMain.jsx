@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import axios from 'axios';
+import axiosInstance from '../../../config/axiosConfig';
 import { API_BASE_URL } from '../../../config/Api';
 import { useProfile } from '../../context-api/ProfileContext';
 import { Link } from 'react-router-dom';
@@ -68,7 +68,7 @@ function AllAppointmentsMain() {
     queryKey: ['allAppointments'], // Unique key for fetching all appointments
     queryFn: async () => {
       // This endpoint is accessible by admin and pastor on the backend
-      const response = await axios.get(`${API_BASE_URL}/appointments`);
+      const response = await axiosInstance.get(`${API_BASE_URL}/appointments`);
       return response.data.sort((a, b) => new Date(a.appointmentDate) - new Date(b.appointmentDate)); // Sort by date
     },
     staleTime: 5 * 60 * 1000,
@@ -78,7 +78,7 @@ function AllAppointmentsMain() {
   // Mutation for updating appointment details
   const updateAppointmentMutation = useMutation({
     mutationFn: async (updatedAppointment) => {
-      const response = await axios.put(`${API_BASE_URL}/appointments/${updatedAppointment._id}`, updatedAppointment);
+      const response = await axiosInstance.put(`${API_BASE_URL}/appointments/${updatedAppointment._id}`, updatedAppointment);
       return response.data;
     },
     onSuccess: () => {
@@ -97,7 +97,7 @@ function AllAppointmentsMain() {
   // Mutation for deleting an appointment
   const deleteAppointmentMutation = useMutation({
     mutationFn: async (appointmentId) => {
-      await axios.delete(`${API_BASE_URL}/appointments/${appointmentId}`);
+      await axiosInstance.delete(`${API_BASE_URL}/appointments/${appointmentId}`);
     },
     onSuccess: () => {
       setActionMessage('Appointment deleted successfully!');
@@ -114,7 +114,7 @@ function AllAppointmentsMain() {
   // Mutation for rescheduling an appointment
   const rescheduleAppointmentMutation = useMutation({
     mutationFn: async ({ id, newAppointmentDate, newAppointmentTime }) => {
-      const response = await axios.patch(`${API_BASE_URL}/appointments/${id}/reschedule`, { newAppointmentDate, newAppointmentTime });
+      const response = await axiosInstance.patch(`${API_BASE_URL}/appointments/${id}/reschedule`, { newAppointmentDate, newAppointmentTime });
       return response.data;
     },
     onSuccess: () => {
@@ -135,7 +135,7 @@ function AllAppointmentsMain() {
   // Mutation for cancelling an appointment
   const cancelAppointmentMutation = useMutation({
     mutationFn: async (appointmentId) => {
-      await axios.patch(`${API_BASE_URL}/appointments/${appointmentId}/cancel`);
+      await axiosInstance.patch(`${API_BASE_URL}/appointments/${appointmentId}/cancel`);
     },
     onSuccess: () => {
       setActionMessage('Appointment cancelled successfully!');
@@ -152,7 +152,7 @@ function AllAppointmentsMain() {
   // Mutation for changing appointment status
   const changeStatusMutation = useMutation({
     mutationFn: async ({ appointmentId, status }) => {
-      const response = await axios.patch(`${API_BASE_URL}/appointments/${appointmentId}/status`, { status });
+      const response = await axiosInstance.patch(`${API_BASE_URL}/appointments/${appointmentId}/status`, { status });
       return response.data;
     },
     onSuccess: () => {
