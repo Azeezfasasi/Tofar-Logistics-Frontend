@@ -3,8 +3,10 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { FaPlus, FaTrash } from 'react-icons/fa';
+import axios from 'axios';
+import { API_BASE_URL } from '../../../config/Api';
 
-export default function EditShipmentModal({ shipment, onClose, onSave }) {
+export default function EditShipmentModal({ shipment, onClose, onSave, facilities: facilitiesProp }) {
   const [formData, setFormData] = useState({
     senderName: '',
     senderPhone: '',
@@ -33,6 +35,7 @@ export default function EditShipmentModal({ shipment, onClose, onSave }) {
 
   // State for the new item input
   const [newItem, setNewItem] = useState('');
+  const [facilities, setFacilities] = useState(facilitiesProp || []);
 
   useEffect(() => {
     if (shipment) {
@@ -63,6 +66,21 @@ export default function EditShipmentModal({ shipment, onClose, onSave }) {
       });
     }
   }, [shipment]);
+
+  // Fetch facilities if not provided as prop
+  useEffect(() => {
+    if (!facilitiesProp || facilitiesProp.length === 0) {
+      const fetchFacilities = async () => {
+        try {
+          const res = await axios.get(`${API_BASE_URL}/facilities`);
+          setFacilities(Array.isArray(res.data) ? res.data : []);
+        } catch (err) {
+          console.error('Error fetching facilities:', err);
+        }
+      };
+      fetchFacilities();
+    }
+  }, [facilitiesProp]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -238,20 +256,30 @@ export default function EditShipmentModal({ shipment, onClose, onSave }) {
             <label className="block text-sm font-medium text-gray-700 mb-2">Facility</label>
             <select name="shipmentFacility" value={formData.shipmentFacility} onChange={handleChange} className='w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500'>
               <option value="">Choose Shipment Facility</option>
-              <option value="Lagos">Lagos</option>
-              <option value="Atlanta">Atlanta</option>
-              <option value="Indianapolis">Indianapolis</option>
-              <option value="New York">New York</option>
-              <option value="New Jersey">New Jersey</option>
-              <option value="Maryland">Maryland</option>
-              <option value="Dallas">Dallas</option>
-              <option value="Houston">Houston</option>
-              <option value="United States of America">United States of America</option>
-              <option value="Canada">Canada</option>
-              <option value="Ontario">Ontario</option>
-              <option value="Calgary">Calgary</option>
-              <option value="Edmonton">Edmonton</option>
-              <option value="United Kingdom">United Kingdom</option>
+              {Array.isArray(facilities) && facilities.length > 0 ? (
+                facilities.filter(f => f.isActive !== false).map(facility => (
+                  <option key={facility._id} value={facility.name}>
+                    {facility.name} {facility.city ? `(${facility.city})` : ''}
+                  </option>
+                ))
+              ) : (
+                <>
+                  <option value="Lagos">Lagos</option>
+                  <option value="Atlanta">Atlanta</option>
+                  <option value="Indianapolis">Indianapolis</option>
+                  <option value="New York">New York</option>
+                  <option value="New Jersey">New Jersey</option>
+                  <option value="Maryland">Maryland</option>
+                  <option value="Dallas">Dallas</option>
+                  <option value="Houston">Houston</option>
+                  <option value="United States of America">United States of America</option>
+                  <option value="Canada">Canada</option>
+                  <option value="Ontario">Ontario</option>
+                  <option value="Calgary">Calgary</option>
+                  <option value="Edmonton">Edmonton</option>
+                  <option value="United Kingdom">United Kingdom</option>
+                </>
+              )}
             </select>
           </div>
           <div className="md:col-span-2">

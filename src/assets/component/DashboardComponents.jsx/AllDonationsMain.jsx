@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import axios from 'axios';
+import axiosInstance from '../../../config/axiosConfig';
 import { API_BASE_URL } from '../../../config/Api';
 import { useProfile } from '../../context-api/ProfileContext'; 
 import { Link } from 'react-router-dom';
@@ -48,7 +48,7 @@ function AllDonationsMain() {
     queryKey: ['allDonations'], // Unique key for fetching all donations
     queryFn: async () => {
       // This endpoint is now accessible by admin and pastor on the backend
-      const response = await axios.get(`${API_BASE_URL}/donations`);
+      const response = await axiosInstance.get(`${API_BASE_URL}/donations`);
       return response.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); // Sort by creation date
     },
     staleTime: 5 * 60 * 1000,
@@ -58,7 +58,7 @@ function AllDonationsMain() {
   // Mutation for editing a donation
   const editDonationMutation = useMutation({
     mutationFn: async (updatedDonation) => {
-      const response = await axios.put(`${API_BASE_URL}/donations/${updatedDonation._id}`, updatedDonation);
+      const response = await axiosInstance.put(`${API_BASE_URL}/donations/${updatedDonation._id}`, updatedDonation);
       return response.data;
     },
     onSuccess: () => {
@@ -77,7 +77,7 @@ function AllDonationsMain() {
   // Mutation for deleting a donation
   const deleteDonationMutation = useMutation({
     mutationFn: async (donationId) => {
-      await axios.delete(`${API_BASE_URL}/donations/${donationId}`);
+      await axiosInstance.delete(`${API_BASE_URL}/donations/${donationId}`);
     },
     onSuccess: () => {
       setActionMessage('Donation deleted successfully!');
@@ -94,7 +94,7 @@ function AllDonationsMain() {
   // Mutation for changing donation status
   const changeStatusMutation = useMutation({
     mutationFn: async ({ donationId, status }) => {
-      const response = await axios.patch(`${API_BASE_URL}/donations/${donationId}/status`, { status });
+      const response = await axiosInstance.patch(`${API_BASE_URL}/donations/${donationId}/status`, { status });
       return response.data;
     },
     onSuccess: () => {

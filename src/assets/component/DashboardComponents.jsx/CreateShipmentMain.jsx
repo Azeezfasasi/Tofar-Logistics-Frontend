@@ -68,6 +68,19 @@ export default function CreateShipmentForm({ token }) {
     cacheTime: 10 * 60 * 1000,
   });
 
+  // Fetch facilities
+  const {
+    data: facilities = []
+  } = useQuery({
+    queryKey: ['facilities'],
+    queryFn: async () => {
+      const res = await axios.get(`${API_BASE_URL}/facilities`);
+      return Array.isArray(res.data) ? res.data : [];
+    },
+    staleTime: 10 * 60 * 1000,
+    cacheTime: 15 * 60 * 1000,
+  });
+
   const mutation = useMutation({
     mutationFn: async (shipmentData) => {
       // Client-side retry for duplicate tracking numbers
@@ -688,20 +701,30 @@ export default function CreateShipmentForm({ token }) {
                     required
                   >
                     <option value="">Select facility</option>
-                    <option value="Lagos">🇳🇬 Lagos</option>
-                    <option value="Atlanta">🇺🇸 Atlanta</option>
-                    <option value="Indianapolis">🇺🇸 Indianapolis</option>
-                    <option value="New York">🇺🇸 New York</option>
-                    <option value="New Jersey">🇺🇸 New Jersey</option>
-                    <option value="Maryland">🇺🇸 Maryland</option>
-                    <option value="Dallas">🇺🇸 Dallas</option>
-                    <option value="Houston">🇺🇸 Houston</option>
-                    <option value="United States of America">🇺🇸 United States</option>
-                    <option value="Canada">🇨🇦 Canada</option>
-                    <option value="Ontario">🇨🇦 Ontario</option>
-                    <option value="Calgary">🇨🇦 Calgary</option>
-                    <option value="Edmonton">🇨🇦 Edmonton</option>
-                    <option value="United Kingdom">🇬🇧 United Kingdom</option>
+                    {Array.isArray(facilities) && facilities.length > 0 ? (
+                      facilities.filter(f => f.isActive !== false).map(facility => (
+                        <option key={facility._id} value={facility.name}>
+                          {facility.name} {facility.city ? `(${facility.city})` : ''}
+                        </option>
+                      ))
+                    ) : (
+                      <>
+                        <option value="Lagos">🇳🇬 Lagos</option>
+                        <option value="Atlanta">🇺🇸 Atlanta</option>
+                        <option value="Indianapolis">🇺🇸 Indianapolis</option>
+                        <option value="New York">🇺🇸 New York</option>
+                        <option value="New Jersey">🇺🇸 New Jersey</option>
+                        <option value="Maryland">🇺🇸 Maryland</option>
+                        <option value="Dallas">🇺🇸 Dallas</option>
+                        <option value="Houston">🇺🇸 Houston</option>
+                        <option value="United States of America">🇺🇸 United States</option>
+                        <option value="Canada">🇨🇦 Canada</option>
+                        <option value="Ontario">🇨🇦 Ontario</option>
+                        <option value="Calgary">🇨🇦 Calgary</option>
+                        <option value="Edmonton">🇨🇦 Edmonton</option>
+                        <option value="United Kingdom">🇬🇧 United Kingdom</option>
+                      </>
+                    )}
                   </select>
                 </div>
                 <div>

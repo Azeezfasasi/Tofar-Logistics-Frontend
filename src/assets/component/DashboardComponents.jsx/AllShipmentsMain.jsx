@@ -319,6 +319,7 @@ export default function AllShipmentsMain({ token }) {
                 shipment={selectedShipment}
                 onClose={closeModal}
                 onUpdate={fetchShipments}
+                facilities={facilities}
                 onSave={async (updatedShipment) => {
                 try {
                     await axios.put(`${API_BASE_URL}/shipments/${updatedShipment._id}`, updatedShipment, {
