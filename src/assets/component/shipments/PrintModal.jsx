@@ -43,32 +43,109 @@ export default function PrintModalContent({ shipment, onClose }) {
       'oklch(0.7 0.2 240)': '#5a7fee',
       'oklch(0.9 0.15 240)': '#a8bfff',
       'oklch(0.95 0.1 240)': '#e0e7ff',
+      'oklch(0.55 0.15 240)': '#1e40af',
+      'oklch(0.65 0.2 240)': '#1e3a8a',
+      'oklch(0.75 0.18 240)': '#3b82f6',
     };
     
-    // Check if it matches any known oklch values
+    // Try exact match first
     for (const [oklch, hex] of Object.entries(oklchToHexMap)) {
       if (oklchColor.includes(oklch)) return hex;
     }
     
-    // For unknown oklch, try to convert to a neutral gray
+    // Extract oklch components and convert based on lightness and hue
+    const match = oklchColor.match(/oklch\s*\(\s*([\d.]+)\s+([\d.]+)\s+([\d.]+)\s*(?:\/\s*[\d.]+)?\s*\)/i);
+    if (match) {
+      const lightness = parseFloat(match[1]);
+      const saturation = parseFloat(match[2]);
+      const hue = parseFloat(match[3]);
+      
+      // Handle grayscale (low saturation)
+      if (saturation < 0.05) {
+        if (lightness > 0.9) return '#f3f4f6';
+        if (lightness > 0.8) return '#e5e7eb';
+        if (lightness > 0.5) return '#9ca3af';
+        return '#4b5563';
+      }
+      
+      // Blue hues (around 240)
+      if (hue >= 200 && hue <= 280) {
+        if (lightness > 0.8) return '#dbeafe';
+        if (lightness > 0.7) return '#bfdbfe';
+        if (lightness > 0.6) return '#93c5fd';
+        if (lightness > 0.5) return '#60a5fa';
+        if (lightness > 0.4) return '#3b82f6';
+        return '#1e40af';
+      }
+      
+      // Amber/Orange hues (around 40-50)
+      if (hue >= 20 && hue <= 70) {
+        if (lightness > 0.8) return '#fef3c7';
+        if (lightness > 0.7) return '#fde68a';
+        if (lightness > 0.6) return '#fcd34d';
+        if (lightness > 0.5) return '#fbbf24';
+        return '#f59e0b';
+      }
+      
+      // Green hues (around 160)
+      if (hue >= 120 && hue <= 180) {
+        if (lightness > 0.8) return '#dcfce7';
+        if (lightness > 0.7) return '#bbf7d0';
+        if (lightness > 0.6) return '#86efac';
+        if (lightness > 0.5) return '#4ade80';
+        return '#22c55e';
+      }
+      
+      // Default fallback based on lightness
+      if (lightness > 0.8) return '#f3f4f6';
+      if (lightness > 0.6) return '#5a7fee';
+      if (lightness > 0.4) return '#3053e0';
+      return '#1e3a8a';
+    }
+    
+    // Ultimate fallback
     return '#666666';
   };
 
   const sanitizeColors = (element) => {
-    // Recursively go through all elements and fix oklch colors
+    // Recursively go through all elements and fix oklch colors and remove classes
     const elements = element.querySelectorAll('*');
     elements.forEach(el => {
+      // First, handle inline styles with oklch
       const styles = el.getAttribute('style') || '';
       if (styles.includes('oklch')) {
         let sanitized = styles;
-        // Replace oklch color values with hex
-        sanitized = sanitized.replace(/oklch\([^)]+\)/g, (match) => convertOklchToHex(match));
+        sanitized = sanitized.replace(/oklch\s*\([^)]+\)/gi, (match) => convertOklchToHex(match));
         el.setAttribute('style', sanitized);
       }
+      
+      // Get computed styles BEFORE removing classes
+      const computedStyle = window.getComputedStyle(el);
+      const colorProps = ['backgroundColor', 'color', 'borderColor', 'boxShadow', 'textShadow'];
+      
+      colorProps.forEach(prop => {
+        try {
+          const value = computedStyle.getPropertyValue(prop.replace(/([A-Z])/g, '-$1').toLowerCase());
+          if (value && value !== 'rgba(0, 0, 0, 0)' && value !== 'transparent') {
+            const cssName = prop.replace(/([A-Z])/g, '-$1').toLowerCase();
+            // Convert oklch if present
+            let finalValue = value;
+            if (value.includes('oklch')) {
+              finalValue = value.replace(/oklch\s*\([^)]+\)/gi, (match) => convertOklchToHex(match));
+            }
+            el.style.setProperty(cssName, finalValue, 'important');
+          }
+        } catch (_err) {
+          // Skip errors
+        }
+      });
+      
+      // Now remove all classes to prevent any CSS resolution issues
+      el.setAttribute('class', '');
     });
   };
 
-  const addPageBreakStyles = (element) => {
+  const _addPageBreakStyles = (element) => {
     // Add CSS to prevent awkward page breaks
     const style = document.createElement('style');
     style.textContent = `
@@ -126,20 +203,32 @@ export default function PrintModalContent({ shipment, onClose }) {
       // Capture the element with better configuration
       const canvas = await window.html2canvas(clonedElement, {
         scale: 2,
-        useCORS: true,
-        logging: false,
+        useCORS: false,
+        logging: true,
         backgroundColor: '#ffffff',
         allowTaint: true,
         removeContainer: false,
-        willReadFrequently: true,
+        willReadFrequently: false,
         imageTimeout: 10000,
         timeout: 30000,
         windowWidth: 900,
         windowHeight: clonedElement.scrollHeight,
         foreignObjectRendering: false,
+        proxy: null,
         ignoreElements: (element) => {
-          return element.tagName === 'SCRIPT' || element.tagName === 'STYLE' || element.tagName === 'META';
+          return element.tagName === 'SCRIPT' || element.tagName === 'META' || element.tagName === 'LINK' || element.tagName === 'STYLE';
         },
+        onclone: (clonedDocument) => {
+          console.log('onclone: Removing all stylesheets and style tags');
+          // Remove ALL external stylesheets and style tags
+          const links = clonedDocument.querySelectorAll('link[rel="stylesheet"]');
+          links.forEach(link => link.remove());
+          
+          const styles = clonedDocument.querySelectorAll('style');
+          styles.forEach(style => style.remove());
+          
+          console.log('onclone: Removed stylesheets, remaining links:', clonedDocument.querySelectorAll('link').length);
+        }
       });
 
       console.log('Canvas created successfully');
