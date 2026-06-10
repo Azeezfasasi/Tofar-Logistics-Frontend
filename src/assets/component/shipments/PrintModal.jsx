@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
+import { FaSpinner } from 'react-icons/fa';
 import tofar from '../../images/tofar.png'
 
 export default function PrintModalContent({ shipment, onClose }) {
@@ -34,6 +35,50 @@ export default function PrintModalContent({ shipment, onClose }) {
     });
   }, []);
 
+  const convertOklchToHex = (oklchColor) => {
+    // oklch(0.5 0.1 240) format
+    // For simplicity, map common oklch colors to hex equivalents
+    const oklchToHexMap = {
+      'oklch(0.5 0.1 240)': '#3053e0',
+      'oklch(0.7 0.2 240)': '#5a7fee',
+      'oklch(0.9 0.15 240)': '#a8bfff',
+      'oklch(0.95 0.1 240)': '#e0e7ff',
+    };
+    
+    // Check if it matches any known oklch values
+    for (const [oklch, hex] of Object.entries(oklchToHexMap)) {
+      if (oklchColor.includes(oklch)) return hex;
+    }
+    
+    // For unknown oklch, try to convert to a neutral gray
+    return '#666666';
+  };
+
+  const sanitizeColors = (element) => {
+    // Recursively go through all elements and fix oklch colors
+    const elements = element.querySelectorAll('*');
+    elements.forEach(el => {
+      const styles = el.getAttribute('style') || '';
+      if (styles.includes('oklch')) {
+        let sanitized = styles;
+        // Replace oklch color values with hex
+        sanitized = sanitized.replace(/oklch\([^)]+\)/g, (match) => convertOklchToHex(match));
+        el.setAttribute('style', sanitized);
+      }
+    });
+  };
+
+  const addPageBreakStyles = (element) => {
+    // Add CSS to prevent awkward page breaks
+    const style = document.createElement('style');
+    style.textContent = `
+      @media print {
+        .print-section { page-break-inside: avoid; }
+      }
+    `;
+    element.appendChild(style);
+  };
+
   const handleDownloadPDF = async () => {
     if (!printRef.current || isDownloading || isScriptLoading) {
       console.error("Cannot generate PDF: component ref is missing, download is in progress, or scripts are still loading.");
@@ -43,153 +88,143 @@ export default function PrintModalContent({ shipment, onClose }) {
     setIsDownloading(true);
     
     let tempContainer = null;
-    let styleOverride = null;
-    let disabledSheets = [];
 
     try {
-      // Create a style element that will override oklch colors
-      styleOverride = document.createElement('style');
-      styleOverride.textContent = `
-        * {
-          color: #000000 !important;
-          background-color: transparent !important;
-          border-color: #cccccc !important;
-        }
-        button, a, [role="button"] {
-          color: #0066cc !important;
-        }
-      `;
-      document.head.appendChild(styleOverride);
-
-      // Clone the element
-      const clonedElement = printRef.current.cloneNode(true);
-      
       // Create a temporary container
       tempContainer = document.createElement('div');
       tempContainer.style.position = 'absolute';
       tempContainer.style.left = '-9999px';
       tempContainer.style.top = '-9999px';
-      tempContainer.style.width = '1000px';
-      tempContainer.style.visibility = 'hidden';
+      tempContainer.style.width = 'auto';
+      tempContainer.style.maxWidth = '1000px';
+      tempContainer.style.visibility = 'visible';
       tempContainer.style.pointerEvents = 'none';
+      tempContainer.style.backgroundColor = '#ffffff';
+      tempContainer.style.padding = '0';
+      tempContainer.style.margin = '0';
       document.body.appendChild(tempContainer);
+
+      // Clone the element - preserve all styling
+      const clonedElement = printRef.current.cloneNode(true);
+      clonedElement.style.width = '100%';
+      clonedElement.style.margin = '0';
+      clonedElement.style.padding = '1.5rem';
+      clonedElement.style.backgroundColor = '#ffffff';
+      clonedElement.style.visibility = 'visible';
+      clonedElement.style.lineHeight = '1.6';
+
+      // Sanitize oklch colors before adding to DOM
+      sanitizeColors(clonedElement);
+
       tempContainer.appendChild(clonedElement);
 
-      // Strip all classes and IDs to prevent CSS rules from applying
-      const stripElement = (el) => {
-        el.removeAttribute('class');
-        el.removeAttribute('id');
-        el.removeAttribute('style');
-        
-        // Process children
-        Array.from(el.children).forEach(child => stripElement(child));
-      };
+      // Wait a moment for styles to be applied
+      await new Promise(resolve => setTimeout(resolve, 150));
 
-      // Don't strip the root element - just its attributes
-      const allElements = clonedElement.querySelectorAll('*');
-      allElements.forEach(el => {
-        // Preserve inline styles but remove dangerous attributes
-        el.removeAttribute('class');
-        el.removeAttribute('id');
-      });
+      console.log('Capturing element with html2canvas...');
 
-      // Apply safe basic styles via inline to replace what was removed
-      const applyBasicStyles = (el) => {
-        const computedStyle = window.getComputedStyle(el);
-        
-        // Only apply safe color values
-        el.style.backgroundColor = '#ffffff';
-        el.style.color = '#000000';
-        el.style.borderColor = '#cccccc';
-        
-        // Copy safe layout properties
-        const safeProps = {
-          display: computedStyle.display,
-          padding: computedStyle.padding,
-          margin: computedStyle.margin,
-          textAlign: computedStyle.textAlign,
-          fontSize: computedStyle.fontSize,
-          fontWeight: computedStyle.fontWeight,
-          border: computedStyle.border,
-        };
-
-        Object.entries(safeProps).forEach(([prop, value]) => {
-          if (value && value !== 'normal' && value !== '0px' && !value.includes('oklch')) {
-            el.style[prop] = value;
-          }
-        });
-
-        Array.from(el.children).forEach(child => applyBasicStyles(child));
-      };
-
-      applyBasicStyles(clonedElement);
-
-      // Disable all stylesheets temporarily
-      disabledSheets = [];
-      Array.from(document.styleSheets).forEach(sheet => {
-        try {
-          if (sheet.disabled === false) {
-            disabledSheets.push(sheet);
-            sheet.disabled = true;
-          }
-        } catch (e) {
-          // Some stylesheets can't be disabled due to CORS
-        }
-      });
-
-      // Capture the element
+      // Capture the element with better configuration
       const canvas = await window.html2canvas(clonedElement, {
         scale: 2,
         useCORS: true,
         logging: false,
         backgroundColor: '#ffffff',
         allowTaint: true,
-        removeContainer: true,
-        willReadFrequently: false,
+        removeContainer: false,
+        willReadFrequently: true,
+        imageTimeout: 10000,
+        timeout: 30000,
+        windowWidth: 900,
+        windowHeight: clonedElement.scrollHeight,
+        foreignObjectRendering: false,
+        ignoreElements: (element) => {
+          return element.tagName === 'SCRIPT' || element.tagName === 'STYLE' || element.tagName === 'META';
+        },
       });
 
+      console.log('Canvas created successfully');
+
       const imgData = canvas.toDataURL('image/png');
+      console.log('Image data generated, length:', imgData.length);
+
       const pdf = new window.jspdf.jsPDF('p', 'mm', 'a4');
       const imgProps = pdf.getImageProperties(imgData);
       
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const topMargin = 5;
+      const bottomMargin = 10; // Extra bottom margin to prevent content from being cut off
+      const sideMargin = 5;
+      const usableWidth = pageWidth - (sideMargin * 2);
+      const usableHeight = pageHeight - topMargin - bottomMargin; // Account for bottom margin
+      
+      // Calculate image height maintaining aspect ratio
+      const imgHeight = (imgProps.height * usableWidth) / imgProps.width;
 
-      // Check if content fits on a single page
-      if (pdfHeight < pdf.internal.pageSize.getHeight()) {
-        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      console.log('PDF dimensions - Page:', pageWidth, 'x', pageHeight, 'Usable Height:', usableHeight, 'Image Height:', imgHeight);
+
+      // If content fits on one page, add it simply
+      if (imgHeight <= usableHeight) {
+        pdf.addImage(imgData, 'PNG', sideMargin, topMargin, usableWidth, imgHeight);
       } else {
-        let heightLeft = pdfHeight;
-        let position = 0;
-        const pageHeight = pdf.internal.pageSize.getHeight();
+        // For multi-page PDFs, split the canvas properly
+        const canvasWidth = canvas.width;
+        const canvasHeight = canvas.height;
         
-        pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight);
-        heightLeft -= pageHeight;
+        // Calculate pixels per mm to maintain consistency
+        const pixelsPerMm = canvasHeight / imgHeight;
+        const pageHeightInPixels = usableHeight * pixelsPerMm;
         
-        while (heightLeft > 0) {
-          position = heightLeft - pdfHeight;
-          pdf.addPage();
-          pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight);
-          heightLeft -= pageHeight;
+        // Calculate number of pages needed
+        const numPages = Math.ceil(canvasHeight / pageHeightInPixels);
+        
+        console.log('Total pages needed:', numPages, 'Page height in pixels:', pageHeightInPixels);
+        
+        // Add each page
+        for (let i = 0; i < numPages; i++) {
+          if (i > 0) {
+            pdf.addPage();
+          }
+          
+          const yOffset = i * pageHeightInPixels;
+          const pageCanvasHeight = Math.min(pageHeightInPixels, canvasHeight - yOffset);
+          
+          // Create temporary canvas to crop the section
+          const tempCanvas = document.createElement('canvas');
+          tempCanvas.width = canvasWidth;
+          tempCanvas.height = pageCanvasHeight;
+          
+          const tempCtx = tempCanvas.getContext('2d');
+          tempCtx.drawImage(
+            canvas,
+            0,
+            yOffset,
+            canvasWidth,
+            pageCanvasHeight,
+            0,
+            0,
+            canvasWidth,
+            pageCanvasHeight
+          );
+          
+          const croppedImgData = tempCanvas.toDataURL('image/png');
+          const croppedHeight = (pageCanvasHeight * usableWidth) / canvasWidth;
+          
+          pdf.addImage(croppedImgData, 'PNG', sideMargin, topMargin, usableWidth, croppedHeight);
         }
       }
 
       pdf.save(`Shipment_${shipment?.trackingNumber || 'details'}.pdf`);
+      console.log('PDF saved successfully');
 
     } catch (error) {
       console.error("Failed to generate PDF:", error);
-      alert('Failed to generate PDF. Please try again.');
+      alert(`Failed to generate PDF: ${error.message || error}`);
     } finally {
-      // Always clean up temporary elements and stylesheets
+      // Always clean up temporary elements
       if (tempContainer && tempContainer.parentNode) {
         tempContainer.parentNode.removeChild(tempContainer);
       }
-      if (styleOverride && styleOverride.parentNode) {
-        styleOverride.parentNode.removeChild(styleOverride);
-      }
-      disabledSheets.forEach(sheet => {
-        sheet.disabled = false;
-      });
       setIsDownloading(false);
     }
   };
@@ -263,145 +298,170 @@ export default function PrintModalContent({ shipment, onClose }) {
 
   return (
     <>
-      <h2 className="text-lg font-semibold">Shipment Details</h2>
-      <div className="overflow-auto max-h-[70vh] my-4">
+      <div className="flex items-center justify-between mb-6 pb-4 border-b-2 border-gray-200">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">Shipment Details</h2>
+          <p className="text-sm text-gray-500 mt-1">Professional shipment documentation</p>
+        </div>
+      </div>
+      <div className="overflow-auto max-h-[70vh] my-4 rounded-lg border border-gray-200 shadow-sm">
         {/* The content below uses inline styles for full compatibility with html2canvas */}
-        <div ref={printRef} style={{ backgroundColor: '#ffffff', color: '#000000', padding: '1rem', height: '100%', fontSize: '0.875rem' }}>
+        <div ref={printRef} style={{ backgroundColor: '#ffffff', color: '#000000', padding: '1.5rem', height: '100%', fontSize: '0.8rem', fontFamily: 'Inter, sans-serif' }}>
           {shipment ? (
             <>
-              <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', marginBottom: '1.25rem' }}>
+              <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', marginBottom: '1.5rem', paddingBottom: '1.5rem', borderBottom: '2px solid #e5e7eb' }}>
                 <img
                   src={tofar}
                   alt="Logo"
-                  style={{ width: '200px', height: '170px' }}
+                  style={{ width: '150px', height: '120px', objectFit: 'contain' }}
                 />
               </div>
-              <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                <div>
-                  <p style={{ fontWeight: '600' }}>Tofar Logistics Agency</p>
-                  <p>Nacho Export Warehouse, Murital Muhammad International Airport, <br /> Ikeja Lagos.</p>
-                  <p>Email: <br /> info@tofarcargo.com</p>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', marginBottom: '1.5rem', backgroundColor: '#f9fafb', padding: '1rem', borderRadius: '0.75rem', border: '1px solid #e5e7eb', gap: '1rem' }}>
+                <div style={{ flex: 1, width: '100%' }}>
+                  <p style={{ fontWeight: '700', fontSize: '1rem', color: '#1f2937', marginBottom: '0.4rem' }}>Tofar Logistics Agency</p>
+                  <p style={{ color: '#6b7280', fontSize: '0.8rem', lineHeight: '1.4rem', marginBottom: '0.5rem' }}>
+                    Nacho Export Warehouse<br />
+                    Murital Muhammad International Airport<br />
+                    Ikeja, Lagos, Nigeria
+                  </p>
+                  <p style={{ color: '#6b7280', fontSize: '0.8rem' }}>
+                    <span style={{ fontWeight: '600', color: '#4b5563' }}>Email:</span> info@tofarcargo.com
+                  </p>
                 </div>
                 {shipment.qrCodeUrl && (
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', paddingTop: '0.75rem', borderTop: '1px solid #e5e7eb' }}>
                     <img
                       src={shipment.qrCodeUrl}
                       alt="Shipment QR Code"
-                      style={{ width: '150px', height: '150px' }}
+                      style={{ width: '100px', height: '100px', border: '2px solid #3053e0', borderRadius: '0.5rem', padding: '0.4rem', backgroundColor: '#ffffff' }}
                     />
-                    <p style={{ fontSize: '0.75rem', color: '#6B7280', marginTop: '0.5rem', textAlign: 'center' }}>Scan to track shipment</p>
+                    <p style={{ fontSize: '0.65rem', color: '#6b7280', marginTop: '0.5rem', textAlign: 'center', fontWeight: '500' }}>Scan for tracking</p>
                   </div>
                 )}
               </div>
-              <h3 style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1F2937', borderBottom: '1px solid #E5E7EB', paddingBottom: '0.5rem', marginBottom: '1rem' }}>
-                Shipment Details - <span style={{ color: '#3053e0' }}>{shipment.trackingNumber}</span>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: '700', color: '#1F2937', backgroundColor: 'linear-gradient(135deg, #3053e0 0%, #2d3db0 100%)', backgroundImage: 'linear-gradient(135deg, #3053e0 0%, #2d3db0 100%)', paddingBottom: '0.75rem', paddingLeft: '0.75rem', marginBottom: '1rem', borderBottom: '3px solid #3053e0' }}>
+                <span style={{ display: 'block', color: '#ffffff' }}>Shipment Details</span>
+                <span style={{ display: 'block', color: '#e0e7ff', fontSize: '0.85rem', fontWeight: '600', marginTop: '0.4rem' }}>Tracking: {shipment.trackingNumber}</span>
               </h3>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', columnGap: '3rem', rowGap: '1rem', color: '#4B5563' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', columnGap: '1.5rem', rowGap: '1rem', color: '#4B5563', marginBottom: '1.5rem' }}>
                 {/* Shipment details */}
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span style={{ fontSize: '0.875rem', fontWeight: '600', color: '#6B7280', textTransform: 'uppercase' }}>Tracking Number</span>
-                  <span style={{ fontWeight: '500', color: '#111827' }}>{shipment.trackingNumber}</span>
+                <div style={{ display: 'flex', flexDirection: 'column', padding: '0.75rem', backgroundColor: '#f9fafb', borderRadius: '0.5rem', border: '1px solid #e5e7eb', transition: 'all 0.3s' }}>
+                  <span style={{ fontSize: '0.7rem', fontWeight: '700', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.375rem' }}>Tracking Number</span>
+                  <span style={{ fontWeight: '600', color: '#1f2937', fontSize: '0.95rem' }}>{shipment.trackingNumber}</span>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span style={{ fontSize: '0.875rem', fontWeight: '600', color: '#6B7280', textTransform: 'uppercase' }}>Sender Name</span>
-                  <span style={{ fontWeight: '500', color: '#111827' }}>{shipment.senderName}</span>
+                <div style={{ display: 'flex', flexDirection: 'column', padding: '0.75rem', backgroundColor: '#f9fafb', borderRadius: '0.5rem', border: '1px solid #e5e7eb' }}>
+                  <span style={{ fontSize: '0.7rem', fontWeight: '700', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.375rem' }}>Sender Name</span>
+                  <span style={{ fontWeight: '600', color: '#1f2937', fontSize: '0.95rem' }}>{shipment.senderName}</span>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span style={{ fontSize: '0.875rem', fontWeight: '600', color: '#6B7280', textTransform: 'uppercase' }}>Sender Phone</span>
-                  <span style={{ fontWeight: '500', color: '#111827' }}>{shipment.senderPhone}</span>
+                <div style={{ display: 'flex', flexDirection: 'column', padding: '0.75rem', backgroundColor: '#f9fafb', borderRadius: '0.5rem', border: '1px solid #e5e7eb' }}>
+                  <span style={{ fontSize: '0.7rem', fontWeight: '700', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.375rem' }}>Sender Phone</span>
+                  <span style={{ fontWeight: '600', color: '#1f2937', fontSize: '0.95rem' }}>{shipment.senderPhone}</span>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span style={{ fontSize: '0.875rem', fontWeight: '600', color: '#6B7280', textTransform: 'uppercase' }}>Sender Email</span>
-                  <span style={{ fontWeight: '500', color: '#111827' }}>{shipment.senderEmail}</span>
+                <div style={{ display: 'flex', flexDirection: 'column', padding: '0.75rem', backgroundColor: '#f9fafb', borderRadius: '0.5rem', border: '1px solid #e5e7eb' }}>
+                  <span style={{ fontSize: '0.7rem', fontWeight: '700', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.375rem' }}>Sender Email</span>
+                  <span style={{ fontWeight: '500', color: '#1f2937', fontSize: '0.9rem' }}>{shipment.senderEmail}</span>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span style={{ fontSize: '0.875rem', fontWeight: '600', color: '#6B7280', textTransform: 'uppercase' }}>Sender Address</span>
-                  <span style={{ fontWeight: '500', color: '#111827' }}>{shipment.senderAddress}</span>
+                <div style={{ display: 'flex', flexDirection: 'column', padding: '0.75rem', backgroundColor: '#f9fafb', borderRadius: '0.5rem', border: '1px solid #e5e7eb', gridColumn: 'span 2' }}>
+                  <span style={{ fontSize: '0.7rem', fontWeight: '700', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.375rem' }}>Sender Address</span>
+                  <span style={{ fontWeight: '500', color: '#1f2937', fontSize: '0.9rem' }}>{shipment.senderAddress}</span>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span style={{ fontSize: '0.875rem', fontWeight: '600', color: '#6B7280', textTransform: 'uppercase' }}>Status</span>
-                  <span style={{ ...getStatusColors(shipment.status), fontWeight: '500', textTransform: 'capitalize', width: 'fit-content', padding: '0rem 0.5rem', borderRadius: '0.375rem' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', padding: '0.75rem', backgroundColor: '#f9fafb', borderRadius: '0.5rem', border: '1px solid #e5e7eb' }}>
+                  <span style={{ fontSize: '0.7rem', fontWeight: '700', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.375rem' }}>Status</span>
+                  <div style={{ ...getStatusColors(shipment.status), fontWeight: '600', textTransform: 'capitalize', width: 'fit-content', padding: '0.375rem 0.75rem', borderRadius: '0.5rem', fontSize: '0.8rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
                     {shipment.status}
-                  </span>
+                  </div>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span style={{ fontSize: '0.875rem', fontWeight: '600', color: '#6B7280', textTransform: 'uppercase' }}>Receiver Name</span>
-                  <span style={{ fontWeight: '500' }}>{shipment.recipientName}</span>
+                <div style={{ display: 'flex', flexDirection: 'column', padding: '0.75rem', backgroundColor: '#f9fafb', borderRadius: '0.5rem', border: '1px solid #e5e7eb' }}>
+                  <span style={{ fontSize: '0.7rem', fontWeight: '700', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.375rem' }}>Receiver Name</span>
+                  <span style={{ fontWeight: '600', color: '#1f2937', fontSize: '0.95rem' }}>{shipment.recipientName}</span>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span style={{ fontSize: '0.875rem', fontWeight: '600', color: '#6B7280', textTransform: 'uppercase' }}>Receiver Phone</span>
-                  <span style={{ fontWeight: '500' }}>{shipment.recipientPhone}</span>
+                <div style={{ display: 'flex', flexDirection: 'column', padding: '0.75rem', backgroundColor: '#f9fafb', borderRadius: '0.5rem', border: '1px solid #e5e7eb' }}>
+                  <span style={{ fontSize: '0.7rem', fontWeight: '700', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.375rem' }}>Receiver Phone</span>
+                  <span style={{ fontWeight: '600', color: '#1f2937', fontSize: '0.95rem' }}>{shipment.recipientPhone}</span>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span style={{ fontSize: '0.875rem', fontWeight: '600', color: '#6B7280', textTransform: 'uppercase' }}>Receiver Email</span>
-                  <span style={{ fontWeight: '500' }}>{shipment.receiverEmail}</span>
+                <div style={{ display: 'flex', flexDirection: 'column', padding: '0.75rem', backgroundColor: '#f9fafb', borderRadius: '0.5rem', border: '1px solid #e5e7eb' }}>
+                  <span style={{ fontSize: '0.7rem', fontWeight: '700', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.375rem' }}>Receiver Email</span>
+                  <span style={{ fontWeight: '500', color: '#1f2937', fontSize: '0.9rem' }}>{shipment.receiverEmail}</span>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span style={{ fontSize: '0.875rem', fontWeight: '600', color: '#6B7280', textTransform: 'uppercase' }}>Receiver Address</span>
-                  <span style={{ fontWeight: '500' }}>{shipment.recipientAddress}</span>
+                <div style={{ display: 'flex', flexDirection: 'column', padding: '0.75rem', backgroundColor: '#f9fafb', borderRadius: '0.5rem', border: '1px solid #e5e7eb', gridColumn: 'span 2' }}>
+                  <span style={{ fontSize: '0.7rem', fontWeight: '700', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.375rem' }}>Receiver Address</span>
+                  <span style={{ fontWeight: '500', color: '#1f2937', fontSize: '0.9rem' }}>{shipment.recipientAddress}</span>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span style={{ fontSize: '0.875rem', fontWeight: '600', color: '#6B7280', textTransform: 'uppercase' }}>Origin Address</span>
-                  <span style={{ fontWeight: '500' }}>{shipment.origin}</span>
+                <div style={{ display: 'flex', flexDirection: 'column', padding: '0.75rem', backgroundColor: '#f9fafb', borderRadius: '0.5rem', border: '1px solid #e5e7eb' }}>
+                  <span style={{ fontSize: '0.7rem', fontWeight: '700', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.375rem' }}>Origin</span>
+                  <span style={{ fontWeight: '500', color: '#1f2937', fontSize: '0.9rem' }}>{shipment.origin}</span>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span style={{ fontSize: '0.875rem', fontWeight: '600', color: '#6B7280', textTransform: 'uppercase' }}>Destination Address</span>
-                  <span style={{ fontWeight: '500' }}>{shipment.destination}</span>
+                <div style={{ display: 'flex', flexDirection: 'column', padding: '0.75rem', backgroundColor: '#f9fafb', borderRadius: '0.5rem', border: '1px solid #e5e7eb' }}>
+                  <span style={{ fontSize: '0.7rem', fontWeight: '700', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.375rem' }}>Destination</span>
+                  <span style={{ fontWeight: '500', color: '#1f2937', fontSize: '0.9rem' }}>{shipment.destination}</span>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span style={{ fontSize: '0.875rem', fontWeight: '600', color: '#6B7280', textTransform: 'uppercase' }}>Shipment Pieces</span>
-                  <span style={{ fontWeight: '500' }}>{shipment.shipmentPieces}</span>
+                <div style={{ display: 'flex', flexDirection: 'column', padding: '0.75rem', backgroundColor: '#f9fafb', borderRadius: '0.5rem', border: '1px solid #e5e7eb' }}>
+                  <span style={{ fontSize: '0.7rem', fontWeight: '700', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.375rem' }}>Pieces</span>
+                  <span style={{ fontWeight: '600', color: '#1f2937', fontSize: '0.95rem' }}>{shipment.shipmentPieces}</span>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span style={{ fontSize: '0.875rem', fontWeight: '600', color: '#6B7280', textTransform: 'uppercase' }}>Shipment Type</span>
-                  <span style={{ fontWeight: '500' }}>{shipment.shipmentType}</span>
+                <div style={{ display: 'flex', flexDirection: 'column', padding: '0.75rem', backgroundColor: '#f9fafb', borderRadius: '0.5rem', border: '1px solid #e5e7eb' }}>
+                  <span style={{ fontSize: '0.7rem', fontWeight: '700', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.375rem' }}>Type</span>
+                  <span style={{ fontWeight: '600', color: '#1f2937', fontSize: '0.95rem' }}>{shipment.shipmentType}</span>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span style={{ fontSize: '0.875rem', fontWeight: '600', color: '#6B7280', textTransform: 'uppercase' }}>Shipment Purpose</span>
-                  <span style={{ fontWeight: '500' }}>{shipment.shipmentPurpose}</span>
+                <div style={{ display: 'flex', flexDirection: 'column', padding: '0.75rem', backgroundColor: '#f9fafb', borderRadius: '0.5rem', border: '1px solid #e5e7eb' }}>
+                  <span style={{ fontSize: '0.7rem', fontWeight: '700', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.375rem' }}>Purpose</span>
+                  <span style={{ fontWeight: '500', color: '#1f2937', fontSize: '0.9rem' }}>{shipment.shipmentPurpose}</span>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span style={{ fontSize: '0.875rem', fontWeight: '600', color: '#6B7280', textTransform: 'uppercase' }}>Weight</span>
-                  <span style={{ fontWeight: '500' }}>{shipment.weight}</span>
+                <div style={{ display: 'flex', flexDirection: 'column', padding: '0.75rem', backgroundColor: '#f9fafb', borderRadius: '0.5rem', border: '1px solid #e5e7eb', gridColumn: 'span 2' }}>
+                  <span style={{ fontSize: '0.7rem', fontWeight: '700', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.375rem' }}>Description</span>
+                  <span style={{ fontWeight: '500', color: '#1f2937', fontSize: '0.9rem', lineHeight: '1.5rem' }}>{shipment.notes}</span>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span style={{ fontSize: '0.875rem', fontWeight: '600', color: '#6B7280', textTransform: 'uppercase' }}>Length</span>
-                  <span style={{ fontWeight: '500' }}>{shipment.length}</span>
+
+                {/* Dimensions Section */}
+                <div style={{ gridColumn: 'span 2', marginTop: '0.75rem', paddingTop: '1rem', borderTop: '2px solid #e5e7eb' }}>
+                  <h4 style={{ fontSize: '0.95rem', fontWeight: '700', color: '#1f2937', marginBottom: '0.75rem', display: 'flex', alignItems: 'center' }}>
+                    <span style={{ display: 'inline-block', width: '3px', height: '3px', backgroundColor: '#3053e0', borderRadius: '50%', marginRight: '0.5rem' }}></span>
+                    Package Dimensions & Pricing
+                  </h4>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', columnGap: '1rem', rowGap: '0.75rem' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', padding: '0.6rem', backgroundColor: '#eff6ff', borderLeft: '3px solid #3053e0', borderRadius: '0.375rem' }}>
+                      <span style={{ fontSize: '0.65rem', fontWeight: '700', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.2rem' }}>Weight</span>
+                      <span style={{ fontWeight: '600', color: '#1f2937', fontSize: '0.9rem' }}>{shipment.weight}</span>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', padding: '0.6rem', backgroundColor: '#eff6ff', borderLeft: '3px solid #3053e0', borderRadius: '0.375rem' }}>
+                      <span style={{ fontSize: '0.65rem', fontWeight: '700', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.2rem' }}>Length</span>
+                      <span style={{ fontWeight: '600', color: '#1f2937', fontSize: '0.9rem' }}>{shipment.length}</span>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', padding: '0.6rem', backgroundColor: '#eff6ff', borderLeft: '3px solid #3053e0', borderRadius: '0.375rem' }}>
+                      <span style={{ fontSize: '0.65rem', fontWeight: '700', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.2rem' }}>Width</span>
+                      <span style={{ fontWeight: '600', color: '#1f2937', fontSize: '0.9rem' }}>{shipment.width}</span>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', padding: '0.6rem', backgroundColor: '#eff6ff', borderLeft: '3px solid #3053e0', borderRadius: '0.375rem' }}>
+                      <span style={{ fontSize: '0.65rem', fontWeight: '700', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.2rem' }}>Height</span>
+                      <span style={{ fontWeight: '600', color: '#1f2937', fontSize: '0.9rem' }}>{shipment.height}</span>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', padding: '0.6rem', backgroundColor: '#f0fdf4', borderLeft: '3px solid #22c55e', borderRadius: '0.375rem' }}>
+                      <span style={{ fontSize: '0.65rem', fontWeight: '700', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.2rem' }}>Cost</span>
+                      <span style={{ fontWeight: '700', color: '#16a34a', fontSize: '1rem' }}>₦{shipment.cost}</span>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', padding: '0.6rem', backgroundColor: '#fef3c7', borderLeft: '3px solid #f59e0b', borderRadius: '0.375rem' }}>
+                      <span style={{ fontSize: '0.65rem', fontWeight: '700', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.2rem' }}>Date</span>
+                      <span style={{ fontWeight: '600', color: '#1f2937', fontSize: '0.9rem' }}>{new Date(shipment.shipmentDate).toLocaleDateString()}</span>
+                    </div>
+                  </div>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span style={{ fontSize: '0.875rem', fontWeight: '600', color: '#6B7280', textTransform: 'uppercase' }}>Width</span>
-                  <span style={{ fontWeight: '500' }}>{shipment.width}</span>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span style={{ fontSize: '0.875rem', fontWeight: '600', color: '#6B7280', textTransform: 'uppercase' }}>Height</span>
-                  <span style={{ fontWeight: '500' }}>{shipment.height}</span>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span style={{ fontSize: '0.875rem', fontWeight: '600', color: '#6B7280', textTransform: 'uppercase' }}>Shipment Cost</span>
-                  <span style={{ fontWeight: '500' }}>₦{shipment.cost}</span>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span style={{ fontSize: '0.875rem', fontWeight: '600', color: '#6B7280', textTransform: 'uppercase' }}>Shipment Date</span>
-                  <span style={{ fontWeight: '500' }}>{new Date(shipment.shipmentDate).toLocaleDateString()}</span>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gridColumn: 'span 2' }}>
-                  <span style={{ fontSize: '0.875rem', fontWeight: '600', color: '#6B7280', textTransform: 'uppercase' }}>Description</span>
-                  <span style={{ fontWeight: '500' }}>{shipment.notes}</span>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gridColumn: 'span 2' }}>
-                  <span style={{ fontSize: '0.875rem', fontWeight: '600', color: '#6B7280', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Shipment Items</span>
-                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem', border: '1px solid #E5E7EB', borderRadius: '4px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gridColumn: 'span 2', marginTop: '1rem', paddingTop: '1rem', borderTop: '2px solid #e5e7eb' }}>
+                  <h4 style={{ fontSize: '0.95rem', fontWeight: '700', color: '#1f2937', marginBottom: '0.75rem', display: 'flex', alignItems: 'center' }}>
+                    <span style={{ display: 'inline-block', width: '3px', height: '3px', backgroundColor: '#3053e0', borderRadius: '50%', marginRight: '0.5rem' }}></span>
+                    Shipment Items
+                  </h4>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem', border: '1px solid #e5e7eb', borderRadius: '0.5rem', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
                     <thead>
                       <tr style={{ backgroundColor: '#3053e0', color: '#FFFFFF', textAlign: 'left' }}>
-                        <th style={{ padding: '0.5rem', borderBottom: '1px solid #E5E7EB' }}>S/N</th>
-                        <th style={{ padding: '0.5rem', borderBottom: '1px solid #E5E7EB' }}>Item Name</th>
+                        <th style={{ padding: '0.6rem', fontWeight: '700', fontSize: '0.75rem', letterSpacing: '0.05em', borderBottom: '2px solid #2d3db0' }}>S/N</th>
+                        <th style={{ padding: '0.6rem', fontWeight: '700', fontSize: '0.75rem', letterSpacing: '0.05em', borderBottom: '2px solid #2d3db0' }}>Item Name</th>
                       </tr>
                     </thead>
                     <tbody>
                       {shipment.items.map((item, index) => (
-                        <tr key={index}>
-                          <td style={{ padding: '0.5rem', borderBottom: '1px solid #E5E7EB' }}>{index + 1}</td>
-                          <td style={{ padding: '0.5rem', borderBottom: '1px solid #E5E7EB' }}>{item}</td>
+                        <tr key={index} style={{ backgroundColor: index % 2 === 0 ? '#ffffff' : '#f9fafb', borderBottom: '1px solid #e5e7eb', transition: 'background-color 0.2s' }}>
+                          <td style={{ padding: '0.6rem', fontWeight: '600', color: '#3053e0', width: '50px', fontSize: '0.9rem' }}>{index + 1}</td>
+                          <td style={{ padding: '0.6rem', color: '#1f2937', fontWeight: '500', fontSize: '0.85rem' }}>{item}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -416,18 +476,32 @@ export default function PrintModalContent({ shipment, onClose }) {
           )}
         </div>
       </div>
-      <div className="flex justify-end gap-2 mt-4">
-        <Button variant="outline" onClick={onClose}>
+      <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-gray-200">
+        <Button 
+          variant="outline" 
+          onClick={onClose}
+          className="px-6 py-2 font-medium hover:bg-gray-50 transition-all"
+        >
           Cancel
         </Button>
-        <Button onClick={handleDownloadPDF} disabled={!shipment || isDownloading || isScriptLoading}>
+        <Button 
+          onClick={handleDownloadPDF} 
+          disabled={!shipment || isDownloading || isScriptLoading}
+          className="px-6 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-medium hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+        >
           {isScriptLoading ? (
-            'Loading Libraries...'
+            <>
+              <FaSpinner className="animate-spin mr-2" />
+              Loading...
+            </>
           ) : isDownloading ? (
-            'Downloading...'
+            <>
+              <FaSpinner className="animate-spin mr-2" />
+              Generating...
+            </>
           ) : (
             <>
-               Download PDF
+              📥 Download PDF
             </>
           )}
         </Button>

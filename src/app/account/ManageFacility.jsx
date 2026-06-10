@@ -185,11 +185,11 @@ export default function ManageFacility() {
               placeholder='Search facilities...'
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className='w-full md:w-64 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500'
+              className='w-full md:w-64 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
             />
             <button
               onClick={() => handleOpenModal()}
-              className='flex items-center gap-2 px-6 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors whitespace-nowrap'
+              className='flex items-center gap-2 px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap'
             >
               <FaPlus /> Add Facility
             </button>
@@ -198,7 +198,7 @@ export default function ManageFacility() {
           {/* Loading State */}
           {loading ? (
             <div className='flex items-center justify-center py-12'>
-              <FaSpinner className='animate-spin text-green-600 text-4xl' />
+              <FaSpinner className='animate-spin text-blue-600 text-4xl' />
             </div>
           ) : filteredFacilities.length === 0 ? (
             <div className='text-center py-12 bg-gray-50 rounded-lg'>
@@ -211,7 +211,7 @@ export default function ManageFacility() {
                   key={facility._id}
                   className={`p-6 rounded-lg border-2 transition-all ${
                     facility.isActive
-                      ? 'bg-white border-green-200 hover:shadow-lg'
+                      ? 'bg-white border-blue-200 hover:shadow-lg'
                       : 'bg-gray-50 border-gray-200 opacity-75'
                   }`}
                 >
@@ -220,7 +220,7 @@ export default function ManageFacility() {
                     <span
                       className={`px-3 py-1 rounded-full text-sm font-semibold ${
                         facility.isActive
-                          ? 'bg-green-100 text-green-800'
+                          ? 'bg-blue-100 text-blue-800'
                           : 'bg-gray-100 text-gray-800'
                       }`}
                     >
@@ -260,7 +260,7 @@ export default function ManageFacility() {
                       className={`flex-1 px-3 py-2 rounded-lg transition-colors text-sm font-semibold text-white ${
                         facility.isActive
                           ? 'bg-yellow-600 hover:bg-yellow-700'
-                          : 'bg-green-600 hover:bg-green-700'
+                          : 'bg-blue-600 hover:bg-blue-700'
                       }`}
                     >
                       {facility.isActive ? 'Deactivate' : 'Activate'}
@@ -295,7 +295,7 @@ export default function ManageFacility() {
                       value={formData.name}
                       onChange={handleInputChange}
                       required
-                      className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500'
+                      className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
                       placeholder='e.g., Atlanta Hub'
                     />
                   </div>
@@ -306,7 +306,7 @@ export default function ManageFacility() {
                       name='code'
                       value={formData.code}
                       onChange={handleInputChange}
-                      className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500'
+                      className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
                       placeholder='e.g., ATL'
                     />
                   </div>
@@ -322,7 +322,7 @@ export default function ManageFacility() {
                       value={formData.country}
                       onChange={handleInputChange}
                       required
-                      className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500'
+                      className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
                       placeholder='e.g., United States'
                     />
                   </div>
@@ -333,7 +333,7 @@ export default function ManageFacility() {
                       name='state'
                       value={formData.state}
                       onChange={handleInputChange}
-                      className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500'
+                      className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
                       placeholder='e.g., Georgia'
                     />
                   </div>
@@ -348,7 +348,7 @@ export default function ManageFacility() {
                       name='city'
                       value={formData.city}
                       onChange={handleInputChange}
-                      className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500'
+                      className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
                       placeholder='e.g., Atlanta'
                     />
                   </div>
@@ -359,7 +359,7 @@ export default function ManageFacility() {
                       name='address'
                       value={formData.address}
                       onChange={handleInputChange}
-                      className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500'
+                      className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
                       placeholder='Full address'
                     />
                   </div>
@@ -374,7 +374,7 @@ export default function ManageFacility() {
                       name='contactPerson'
                       value={formData.contactPerson}
                       onChange={handleInputChange}
-                      className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500'
+                      className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
                       placeholder='Name'
                     />
                   </div>
@@ -385,7 +385,7 @@ export default function ManageFacility() {
                       name='contactPhone'
                       value={formData.contactPhone}
                       onChange={handleInputChange}
-                      className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500'
+                      className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
                       placeholder='Phone number'
                     />
                   </div>
@@ -400,7 +400,7 @@ export default function ManageFacility() {
                       name='contactEmail'
                       value={formData.contactEmail}
                       onChange={handleInputChange}
-                      className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500'
+                      className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
                       placeholder='Email address'
                     />
                   </div>
@@ -411,7 +411,7 @@ export default function ManageFacility() {
                       name='capacity'
                       value={formData.capacity}
                       onChange={handleInputChange}
-                      className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500'
+                      className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
                       placeholder='Storage capacity'
                     />
                   </div>
@@ -425,7 +425,7 @@ export default function ManageFacility() {
                     value={formData.notes}
                     onChange={handleInputChange}
                     rows='3'
-                    className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500'
+                    className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
                     placeholder='Additional information'
                   />
                 </div>
@@ -438,7 +438,7 @@ export default function ManageFacility() {
                     className={`flex-1 px-4 py-2 font-semibold rounded-lg transition-colors flex items-center justify-center gap-2 ${
                       submitLoading
                         ? 'bg-gray-400 text-white cursor-not-allowed'
-                        : 'bg-green-600 text-white hover:bg-green-700'
+                        : 'bg-blue-600 text-white hover:bg-blue-700'
                     }`}
                   >
                     {submitLoading ? (

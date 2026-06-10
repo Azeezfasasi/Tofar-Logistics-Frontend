@@ -175,7 +175,7 @@ export default function ShipmentTable({ shipments, onActionClick, selectedShipme
       </table>
 
       {/* Pagination */}
-      <div className="flex items-center justify-between p-6 border-t border-gray-200 bg-gray-50">
+      <div className="flex flex-col md:flex-row gap-2 md:gap-0 items-center justify-between p-6 border-t border-gray-200 bg-gray-50">
         <div className="text-sm text-gray-600 font-medium">
           Page <span className="font-bold text-gray-900">{currentPage}</span> of <span className="font-bold text-gray-900">{totalPages}</span> • Total: <span className="font-bold text-gray-900">{visibleShipments.length}</span> shipments
         </div>

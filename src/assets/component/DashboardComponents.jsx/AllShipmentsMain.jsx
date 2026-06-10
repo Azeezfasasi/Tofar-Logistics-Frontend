@@ -28,6 +28,7 @@ export default function AllShipmentsMain({ token }) {
   const [selectedShipments, setSelectedShipments] = useState([]);
   const [bulkModalOpen, setBulkModalOpen] = useState(false);
   const [bulkStatusFilter, setBulkStatusFilter] = useState('');
+  const [bulkLoading, setBulkLoading] = useState(false);
 
   const getTimestamp = (item) => {
   return new Date(
@@ -262,6 +263,7 @@ export default function AllShipmentsMain({ token }) {
         return;
       }
 
+      setBulkLoading(true);
       try {
         const authToken = token || localStorage.getItem('token');
         await Promise.all(
@@ -281,6 +283,8 @@ export default function AllShipmentsMain({ token }) {
       } catch (err) {
         console.error("Failed to bulk update status", err);
         alert(`Error: ${err.response?.data?.message || err.message}`);
+      } finally {
+        setBulkLoading(false);
       }
     };
 
@@ -422,15 +426,24 @@ export default function AllShipmentsMain({ token }) {
             <div className="flex gap-3">
               <button
                 onClick={() => setBulkModalOpen(false)}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium"
+                disabled={bulkLoading}
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Cancel
               </button>
               <button
                 onClick={handleBulkStatusChange}
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium"
+                disabled={bulkLoading}
+                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
-                Update
+                {bulkLoading ? (
+                  <>
+                    <FaSpinner className="animate-spin" />
+                    Updating...
+                  </>
+                ) : (
+                  'Update'
+                )}
               </button>
             </div>
           </div>

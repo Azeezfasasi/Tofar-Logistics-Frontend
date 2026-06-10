@@ -24,6 +24,7 @@ export default function DeliveredShipmentsMain({ token }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [facilities, setFacilities] = useState([]);
+  const [statuses, setStatuses] = useState([]);
 
   const getTimestamp = (item) => {
     return new Date(
@@ -40,7 +41,10 @@ export default function DeliveredShipmentsMain({ token }) {
   useEffect(() => {
     const fetchFacilitiesAndStatuses = async () => {
       try {
-        const facilitiesRes = await axios.get(`${API_BASE_URL}/facilities`);
+        const [facilitiesRes, statusesRes] = await Promise.all([
+          axios.get(`${API_BASE_URL}/facilities`),
+          axios.get(`${API_BASE_URL}/shipment-statuses`)
+        ]);
         
         // Transform facilities for display
         const facilityList = facilitiesRes.data.map(f => ({
@@ -48,8 +52,11 @@ export default function DeliveredShipmentsMain({ token }) {
           count: 0 // Will be calculated from shipments
         }));
         setFacilities(facilityList);
+        
+        // Set statuses
+        setStatuses(statusesRes.data || []);
       } catch (err) {
-        console.error('Error fetching facilities:', err);
+        console.error('Error fetching facilities/statuses:', err);
       }
     };
     
@@ -189,9 +196,12 @@ export default function DeliveredShipmentsMain({ token }) {
     }
     };
 
-    const handleStatusChange = async ({ shipmentId, newStatus }) => {
+    const handleStatusChange = async ({ shipmentId, newStatus, location }) => {
         try {
-            await axios.patch(`${API_BASE_URL}/shipments/${shipmentId}/status`, { status: newStatus }, {
+            await axios.patch(`${API_BASE_URL}/shipments/${shipmentId}/status`, { 
+              status: newStatus,
+              location: location
+            }, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
@@ -199,6 +209,7 @@ export default function DeliveredShipmentsMain({ token }) {
             await fetchShipments(); 
         } catch (err) {
             console.error("Failed to update status", err);
+            throw new Error(err?.response?.data?.message || 'Failed to update status. Please try again.');
         }
     };
     
@@ -297,6 +308,7 @@ export default function DeliveredShipmentsMain({ token }) {
           shipment={selectedShipment}
           onClose={() => closeModal(false)}
           onStatusChange={handleStatusChange}
+          statuses={statuses}
           />
         </BasicModal>
         )}
