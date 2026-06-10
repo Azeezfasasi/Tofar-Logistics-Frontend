@@ -31,6 +31,8 @@ export default function EditShipmentModal({ shipment, onClose, onSave, facilitie
     shipmentType: '',
     shipmentPurpose: '',
     shipmentFacility: '',
+    shipmentDate: '',
+    deliveryDate: '',
   });
 
   // State for the new item input
@@ -63,6 +65,8 @@ export default function EditShipmentModal({ shipment, onClose, onSave, facilitie
         shipmentType: shipment.shipmentType || '',
         shipmentPurpose: shipment.shipmentPurpose || '',
         shipmentFacility: shipment.shipmentFacility || '',
+        shipmentDate: shipment.shipmentDate ? shipment.shipmentDate.split('T')[0] : '',
+        deliveryDate: shipment.deliveryDate ? shipment.deliveryDate.split('T')[0] : '',
       });
     }
   }, [shipment]);
@@ -291,6 +295,26 @@ export default function EditShipmentModal({ shipment, onClose, onSave, facilitie
               placeholder='Enter the Pieces of the shipment'
               className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
               rows="2"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Shipment Date</label>
+            <Input 
+              type="date" 
+              name="shipmentDate" 
+              value={formData.shipmentDate} 
+              onChange={handleChange} 
+              className="rounded-lg border-gray-300 focus:ring-indigo-500" 
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Expected Delivery Date</label>
+            <Input 
+              type="date" 
+              name="deliveryDate" 
+              value={formData.deliveryDate} 
+              onChange={handleChange} 
+              className="rounded-lg border-gray-300 focus:ring-indigo-500" 
             />
           </div>
         </div>
