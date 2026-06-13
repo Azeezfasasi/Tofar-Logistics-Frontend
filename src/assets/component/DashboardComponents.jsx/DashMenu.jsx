@@ -105,9 +105,9 @@ function DashMenu() {
                         Quote Request Responses
                     </Nav.Item>
                     )}
-                    {(isAdmin || isEmployee || isClient) && (
+                    {(isAdmin || isEmployee) && (
                     <Nav.Menu eventKey="4" title="Blog Post" icon={<ListIcon />}>
-                        <Nav.Item eventKey="4-1" as={Link} to="/app/account/allposts">All Posts</Nav.Item>
+                        {/* <Nav.Item eventKey="4-1" as={Link} to="/app/account/allposts">All Posts</Nav.Item> */}
                         {(isAdmin || isAgent|| isEmployee) && (
                         <Nav.Item eventKey="4-2" as={Link} to="/app/account/allblogpost">Manage Blog Posts</Nav.Item>
                         )}

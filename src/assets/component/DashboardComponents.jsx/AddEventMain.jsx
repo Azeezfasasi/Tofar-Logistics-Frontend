@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import axios from 'axios';
+import axiosInstance from '@/config/axiosConfig'
 import { API_BASE_URL } from '../../../config/Api'; // Adjust path as needed
 import { useProfile } from '../../context-api/ProfileContext'; // Corrected path
 import { Link, useNavigate } from 'react-router-dom';
@@ -41,7 +41,7 @@ function AddEventMain() { // Renamed from CreateEvent to AddEventMain as per use
 
   // Function to create a new event (now handles recurrence data)
   const createEvent = async (newEventData) => {
-    const response = await axios.post(`${API_BASE_URL}/events`, newEventData);
+    const response = await axiosInstance.post(`${API_BASE_URL}/events`, newEventData);
     return response.data;
   };
 

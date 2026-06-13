@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import axios from 'axios';
+import axiosInstance from '@/config/axiosConfig'
 import { API_BASE_URL } from '../../../config/Api';
 import { useProfile } from '../../context-api/ProfileContext'; 
 import { Link, useNavigate } from 'react-router-dom';
@@ -24,7 +24,7 @@ function AddNewPostMain() {
 
   // Function to create a new blog post
   const createBlogPost = async (newBlogData) => {
-    const response = await axios.post(`${API_BASE_URL}/blogs`, newBlogData);
+    const response = await axiosInstance.post(`${API_BASE_URL}/blogs`, newBlogData);
     return response.data;
   };
 

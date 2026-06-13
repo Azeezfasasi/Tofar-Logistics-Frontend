@@ -24,11 +24,23 @@ function ManageNewsletter() {
   const [actionMessage, setActionMessage] = useState(''); // For success messages
   const [actionError, setActionError] = useState(''); // For specific action errors
 
+  // State for search, filtering, and pagination
+  const [searchTerm, setSearchTerm] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
   // Clear messages when starting a new action or editing
   useEffect(() => {
     setActionError('');
     setActionMessage('');
   }, [editingNewsletterId]);
+
+  // Reset page when search or date filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, startDate, endDate]);
 
   // Determine if the user has permission to manage newsletters
   const hasPermission = isAuthenticated && (isAdmin || isEmployee);
@@ -49,6 +61,37 @@ function ManageNewsletter() {
     staleTime: 5 * 60 * 1000,
     enabled: hasPermission, // Only run if authenticated AND (isAdmin OR isEmployee)
   });
+
+  // Reset page when search or date filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, startDate, endDate]);
+
+  // Filter logic
+  const filteredNewsletters = newsletters?.filter((newsletter) => {
+    const matchesSearch = searchTerm === '' || 
+      newsletter.subject?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      newsletter.sentBy?.name?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    let matchesDateRange = true;
+    if (startDate || endDate) {
+      const date = new Date(newsletter.date);
+      if (startDate && date < new Date(startDate)) matchesDateRange = false;
+      if (endDate) {
+        const endOfDay = new Date(endDate);
+        endOfDay.setHours(23, 59, 59, 999);
+        if (date > endOfDay) matchesDateRange = false;
+      }
+    }
+    
+    return matchesSearch && matchesDateRange;
+  }) || [];
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredNewsletters.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedNewsletters = filteredNewsletters.slice(startIndex, endIndex);
 
   // Mutation for editing a newsletter
   const editNewsletterMutation = useMutation({
@@ -194,7 +237,56 @@ function ManageNewsletter() {
           </div>
         )}
 
+        {/* Search and Date Filter Controls */}
+        <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Search Input */}
+            <div>
+              <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-2">
+                Search by Subject or Sender
+              </label>
+              <input
+                id="search"
+                type="text"
+                placeholder="Search newsletters..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            {/* Start Date Filter */}
+            <div>
+              <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 mb-2">
+                From Date
+              </label>
+              <input
+                id="startDate"
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            {/* End Date Filter */}
+            <div>
+              <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 mb-2">
+                To Date
+              </label>
+              <input
+                id="endDate"
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+        </div>
+
         {newsletters && newsletters.length > 0 ? (
+          <>
           <div className="overflow-x-auto bg-white rounded-xl shadow-lg p-6">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
@@ -214,7 +306,8 @@ function ManageNewsletter() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {newsletters.map((newsletter) => (
+                {paginatedNewsletters.length > 0 ? (
+                  paginatedNewsletters.map((newsletter) => (
                   <React.Fragment key={newsletter._id}>
                     <tr>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
@@ -293,10 +386,62 @@ function ManageNewsletter() {
                       </tr>
                     )}
                   </React.Fragment>
-                ))}
+                ))
+                ) : (
+                  <tr>
+                    <td colSpan="4" className="px-6 py-8 text-center text-gray-600">
+                      No newsletters match your search or date criteria.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
-          </div>
+            </div>
+
+            {/* Results Counter */}
+            {filteredNewsletters.length > 0 && (
+              <div className="text-sm text-gray-600 mt-4 text-center">
+                Showing {startIndex + 1} to {Math.min(endIndex, filteredNewsletters.length)} of {filteredNewsletters.length} newsletters
+              </div>
+            )}
+
+            {/* Pagination Controls */}
+            {filteredNewsletters.length > itemsPerPage && (
+              <div className="flex items-center justify-between bg-white rounded-xl shadow-lg p-6 mt-6">
+                <button
+                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                  disabled={currentPage === 1}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition duration-200"
+                >
+                  Previous
+                </button>
+
+                <div className="flex items-center space-x-2">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`px-3 py-2 rounded-lg transition duration-200 ${
+                        page === currentPage
+                          ? 'bg-blue-600 text-white font-semibold'
+                          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                  disabled={currentPage === totalPages}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition duration-200"
+                >
+                  Next
+                </button>
+              </div>
+            )}
+          </>
         ) : (
           <p className="text-center text-gray-600">No newsletters to manage.</p>
         )}

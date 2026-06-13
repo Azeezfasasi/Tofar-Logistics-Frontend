@@ -23,6 +23,10 @@ function ManageBlogPosts() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
+  // State for bulk actions
+  const [selectedBlogs, setSelectedBlogs] = useState(new Set());
+  const [bulkStatusAction, setBulkStatusAction] = useState('published');
+
   // Reset to page 1 when search or filter changes
   React.useEffect(() => {
     setCurrentPage(1);
@@ -148,6 +152,62 @@ function ManageBlogPosts() {
     },
   });
 
+  // Mutation for bulk deleting blogs
+  const bulkDeleteMutation = useMutation({
+    mutationFn: async (blogIds) => {
+      const token = localStorage.getItem('token');
+      await Promise.all(
+        blogIds.map((blogId) =>
+          axios.delete(`${API_BASE_URL}/blogs/${blogId}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+          })
+        )
+      );
+    },
+    onSuccess: () => {
+      setActionMessage(`${selectedBlogs.size} blog(s) deleted successfully!`);
+      setActionError('');
+      setSelectedBlogs(new Set());
+      queryClient.invalidateQueries({ queryKey: ['adminBlogPosts'] });
+      setTimeout(() => setActionMessage(''), 3000);
+    },
+    onError: (err) => {
+      setActionError(err.response?.data?.message || 'Failed to delete blogs.');
+      setActionMessage('');
+    },
+  });
+
+  // Mutation for bulk changing blog status
+  const bulkChangeStatusMutation = useMutation({
+    mutationFn: async ({ blogIds, status }) => {
+      const token = localStorage.getItem('token');
+      await Promise.all(
+        blogIds.map((blogId) =>
+          axios.patch(`${API_BASE_URL}/blogs/${blogId}/status`, { status }, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+          })
+        )
+      );
+    },
+    onSuccess: () => {
+      setActionMessage(`${selectedBlogs.size} blog(s) status updated successfully!`);
+      setActionError('');
+      setSelectedBlogs(new Set());
+      queryClient.invalidateQueries({ queryKey: ['adminBlogPosts'] });
+      setTimeout(() => setActionMessage(''), 3000);
+    },
+    onError: (err) => {
+      setActionError(err.response?.data?.message || 'Failed to update blog status.');
+      setActionMessage('');
+    },
+  });
+
   // Handle edit button click
   const handleEditClick = (blog) => {
     setEditingBlogId(blog._id);
@@ -185,6 +245,49 @@ function ManageBlogPosts() {
     const newStatus = currentStatus === 'published' ? 'draft' : 'published';
     if (window.confirm(`Are you sure you want to change this blog's status to "${newStatus}"?`)) {
       changeStatusMutation.mutate({ blogId, status: newStatus });
+    }
+  };
+
+  // Bulk action handlers
+  const handleSelectBlog = (blogId) => {
+    const newSelected = new Set(selectedBlogs);
+    if (newSelected.has(blogId)) {
+      newSelected.delete(blogId);
+    } else {
+      newSelected.add(blogId);
+    }
+    setSelectedBlogs(newSelected);
+  };
+
+  const handleSelectAll = () => {
+    if (selectedBlogs.size === paginatedBlogs.length) {
+      setSelectedBlogs(new Set());
+    } else {
+      const allBlogIds = new Set(paginatedBlogs.map((blog) => blog._id));
+      setSelectedBlogs(allBlogIds);
+    }
+  };
+
+  const handleBulkDelete = () => {
+    if (selectedBlogs.size === 0) {
+      setActionError('Please select at least one blog to delete.');
+      return;
+    }
+    if (window.confirm(`Are you sure you want to delete ${selectedBlogs.size} blog(s)? This action cannot be undone.`)) {
+      bulkDeleteMutation.mutate(Array.from(selectedBlogs));
+    }
+  };
+
+  const handleBulkChangeStatus = () => {
+    if (selectedBlogs.size === 0) {
+      setActionError('Please select at least one blog to change status.');
+      return;
+    }
+    if (window.confirm(`Are you sure you want to change the status of ${selectedBlogs.size} blog(s) to "${bulkStatusAction}"?`)) {
+      bulkChangeStatusMutation.mutate({
+        blogIds: Array.from(selectedBlogs),
+        status: bulkStatusAction,
+      });
     }
   };
 
@@ -341,12 +444,62 @@ function ManageBlogPosts() {
           </div>
         )}
 
+        {/* Bulk Actions Section */}
+        {selectedBlogs.size > 0 && (
+          <div className="bg-blue-50 border border-blue-200 rounded-xl shadow-lg p-4 mb-6">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+              <div className="text-sm font-medium text-blue-900">
+                {selectedBlogs.size} blog(s) selected
+              </div>
+              <div className="flex flex-wrap gap-3 items-center">
+                <select
+                  value={bulkStatusAction}
+                  onChange={(e) => setBulkStatusAction(e.target.value)}
+                  className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                >
+                  <option value="published">Publish</option>
+                  <option value="draft">Draft</option>
+                </select>
+                <button
+                  onClick={handleBulkChangeStatus}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition duration-200"
+                  disabled={bulkChangeStatusMutation.isPending}
+                >
+                  {bulkChangeStatusMutation.isPending ? 'Updating...' : 'Change Status'}
+                </button>
+                <button
+                  onClick={handleBulkDelete}
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 transition duration-200"
+                  disabled={bulkDeleteMutation.isPending}
+                >
+                  {bulkDeleteMutation.isPending ? 'Deleting...' : 'Delete Selected'}
+                </button>
+                <button
+                  onClick={() => setSelectedBlogs(new Set())}
+                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition duration-200"
+                >
+                  Clear Selection
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {blogPosts && blogPosts.length > 0 ? (
           <>
             <div className="overflow-x-auto bg-white rounded-xl shadow-lg p-6">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <input
+                      type="checkbox"
+                      checked={selectedBlogs.size > 0 && selectedBlogs.size === paginatedBlogs.length}
+                      onChange={handleSelectAll}
+                      className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                      title="Select all on this page"
+                    />
+                  </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Title
                   </th>
@@ -372,6 +525,14 @@ function ManageBlogPosts() {
                   paginatedBlogs.map((blog) => (
                   <React.Fragment key={blog._id}>
                     <tr>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        <input
+                          type="checkbox"
+                          checked={selectedBlogs.has(blog._id)}
+                          onChange={() => handleSelectBlog(blog._id)}
+                          className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                        />
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         {editingBlogId === blog._id ? (
                           <input

@@ -48,12 +48,27 @@ function AllAppointmentsMain() {
   const [actionMessage, setActionMessage] = useState(''); // For general success messages
   const [actionError, setActionError] = useState(''); // For general action errors
 
+  // State for search, filter, and pagination
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  // State for bulk actions
+  const [selectedAppointments, setSelectedAppointments] = useState(new Set());
+  const [bulkStatusAction, setBulkStatusAction] = useState('confirmed');
+
   // Clear messages when starting a new action or editing
   useEffect(() => {
     setActionError('');
     setActionMessage('');
     setRescheduleError(''); // Clear reschedule specific error
   }, [editingAppointmentId, showRescheduleModal]);
+
+  // Reset to page 1 when search or filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, filterStatus]);
 
   // Determine if the user has permission to manage appointments
   const hasPermission = isAuthenticated && (isAdmin || isEmployee);
@@ -327,6 +342,75 @@ function AllAppointmentsMain() {
     );
   }
 
+  // Filter and search logic
+  const getFilteredAndSearchedAppointments = () => {
+    if (!appointments) return [];
+    
+    return appointments.filter((appointment) => {
+      // Search filter - search in name and email
+      const searchMatch = 
+        appointment.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        appointment.email.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      // Status filter
+      const statusMatch = filterStatus === '' || appointment.status === filterStatus;
+      
+      return searchMatch && statusMatch;
+    });
+  };
+
+  const filteredAppointments = getFilteredAndSearchedAppointments();
+  const totalPages = Math.ceil(filteredAppointments.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedAppointments = filteredAppointments.slice(startIndex, endIndex);
+
+  // Bulk action handlers
+  const handleSelectAppointment = (appointmentId) => {
+    const newSelected = new Set(selectedAppointments);
+    if (newSelected.has(appointmentId)) {
+      newSelected.delete(appointmentId);
+    } else {
+      newSelected.add(appointmentId);
+    }
+    setSelectedAppointments(newSelected);
+  };
+
+  const handleSelectAll = () => {
+    if (selectedAppointments.size === paginatedAppointments.length) {
+      setSelectedAppointments(new Set());
+    } else {
+      const allAppointmentIds = new Set(paginatedAppointments.map((appointment) => appointment._id));
+      setSelectedAppointments(allAppointmentIds);
+    }
+  };
+
+  const handleBulkDelete = () => {
+    if (selectedAppointments.size === 0) {
+      setActionError('Please select at least one appointment to delete.');
+      return;
+    }
+    if (window.confirm(`Are you sure you want to delete ${selectedAppointments.size} appointment(s)? This action cannot be undone.`)) {
+      Array.from(selectedAppointments).forEach((appointmentId) => {
+        deleteAppointmentMutation.mutate(appointmentId);
+      });
+      setSelectedAppointments(new Set());
+    }
+  };
+
+  const handleBulkChangeStatus = () => {
+    if (selectedAppointments.size === 0) {
+      setActionError('Please select at least one appointment to change status.');
+      return;
+    }
+    if (window.confirm(`Are you sure you want to change the status of ${selectedAppointments.size} appointment(s) to "${bulkStatusAction}"?`)) {
+      Array.from(selectedAppointments).forEach((appointmentId) => {
+        changeStatusMutation.mutate({ appointmentId, status: bulkStatusAction });
+      });
+      setSelectedAppointments(new Set());
+    }
+  };
+
   return (
     <section className="py-16 px-2 sm:px-3 lg:px-4 bg-gray-100 font-inter overflow-x-hidden">
       <div className="max-w-7xl mx-auto">
@@ -345,11 +429,112 @@ function AllAppointmentsMain() {
           </div>
         )}
 
+        {/* Search and Filter Section */}
+        {appointments && appointments.length > 0 && (
+          <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Search Input */}
+              <div>
+                <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-2">
+                  Search
+                </label>
+                <input
+                  type="text"
+                  id="search"
+                  placeholder="Search by name or email..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              {/* Status Filter */}
+              <div>
+                <label htmlFor="filterStatus" className="block text-sm font-medium text-gray-700 mb-2">
+                  Filter by Status
+                </label>
+                <select
+                  id="filterStatus"
+                  value={filterStatus}
+                  onChange={(e) => setFilterStatus(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                >
+                  <option value="">All Statuses</option>
+                  <option value="pending">Pending</option>
+                  <option value="confirmed">Confirmed</option>
+                  <option value="rescheduled">Rescheduled</option>
+                  <option value="completed">Completed</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+              </div>
+            </div>
+            {filteredAppointments.length > 0 && (
+              <p className="text-sm text-gray-600 mt-3">
+                Showing <span className="font-semibold">{startIndex + 1}</span> to <span className="font-semibold">{Math.min(endIndex, filteredAppointments.length)}</span> of <span className="font-semibold">{filteredAppointments.length}</span> appointments
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* Bulk Actions Section */}
+        {selectedAppointments.size > 0 && (
+          <div className="bg-blue-50 border border-blue-200 rounded-xl shadow-lg p-4 mb-6">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+              <div className="text-sm font-medium text-blue-900">
+                {selectedAppointments.size} appointment(s) selected
+              </div>
+              <div className="flex flex-wrap gap-3 items-center">
+                <select
+                  value={bulkStatusAction}
+                  onChange={(e) => setBulkStatusAction(e.target.value)}
+                  className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                >
+                  <option value="pending">Pending</option>
+                  <option value="confirmed">Confirmed</option>
+                  <option value="rescheduled">Rescheduled</option>
+                  <option value="completed">Completed</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+                <button
+                  onClick={handleBulkChangeStatus}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition duration-200"
+                  disabled={changeStatusMutation.isPending}
+                >
+                  {changeStatusMutation.isPending ? 'Updating...' : 'Change Status'}
+                </button>
+                <button
+                  onClick={handleBulkDelete}
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 transition duration-200"
+                  disabled={deleteAppointmentMutation.isPending}
+                >
+                  {deleteAppointmentMutation.isPending ? 'Deleting...' : 'Delete Selected'}
+                </button>
+                <button
+                  onClick={() => setSelectedAppointments(new Set())}
+                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition duration-200"
+                >
+                  Clear Selection
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {appointments && appointments.length > 0 ? (
+          <>
           <div className="overflow-x-auto bg-white rounded-xl shadow-lg p-6">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <input
+                      type="checkbox"
+                      checked={selectedAppointments.size > 0 && selectedAppointments.size === paginatedAppointments.length}
+                      onChange={handleSelectAll}
+                      className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                      title="Select all on this page"
+                    />
+                  </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Name
                   </th>
@@ -374,9 +559,18 @@ function AllAppointmentsMain() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {appointments.map((appointment) => (
+                {paginatedAppointments.length > 0 ? (
+                  paginatedAppointments.map((appointment) => (
                   <React.Fragment key={appointment._id}>
                     <tr>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        <input
+                          type="checkbox"
+                          checked={selectedAppointments.has(appointment._id)}
+                          onChange={() => handleSelectAppointment(appointment._id)}
+                          className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                        />
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         {editingAppointmentId === appointment._id ? (
                           <input
@@ -598,10 +792,55 @@ function AllAppointmentsMain() {
                       </tr>
                     )}
                   </React.Fragment>
-                ))}
+                ))
+                ) : (
+                  <tr>
+                    <td colSpan="8" className="px-6 py-8 text-center text-gray-600">
+                      No appointments match your search or filter criteria.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
-          </div>
+            </div>
+
+            {/* Pagination Controls */}
+            {filteredAppointments.length > itemsPerPage && (
+              <div className="flex items-center justify-between bg-white rounded-xl shadow-lg p-6 mt-6">
+                <button
+                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                  disabled={currentPage === 1}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition duration-200"
+                >
+                  Previous
+                </button>
+
+                <div className="flex items-center space-x-2">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`px-3 py-2 rounded-lg transition duration-200 ${
+                        page === currentPage
+                          ? 'bg-blue-600 text-white font-semibold'
+                          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                  disabled={currentPage === totalPages}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition duration-200"
+                >
+                  Next
+                </button>
+              </div>
+            )}
+          </>
         ) : (
           <p className="text-center text-gray-600">No appointments to manage.</p>
         )}

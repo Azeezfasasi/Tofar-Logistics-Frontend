@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import axios from 'axios';
+import axiosInstance from '@/config/axiosConfig'
 import { API_BASE_URL } from '../../../config/Api';
 import { useNavigate } from 'react-router-dom';
 import { useProfile } from '../../context-api/ProfileContext'; 
@@ -38,7 +38,7 @@ function BookAppointmentMain() {
     mutationFn: async (appointmentData) => {
       // NEW LOGIC: Choose endpoint based on authentication status
       const endpoint = isAuthenticated ? `${API_BASE_URL}/appointments/authenticated` : `${API_BASE_URL}/appointments`;
-      const response = await axios.post(endpoint, appointmentData);
+      const response = await axiosInstance.post(endpoint, appointmentData);
       return response.data;
     },
     onSuccess: (data) => {

@@ -19,7 +19,7 @@ function NewsletterSubscribersMain() {
   // State for search and pagination
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const itemsPerPage = 1;
 
   // State for editing mode
   const [editingSubscriberId, setEditingSubscriberId] = useState(null);
